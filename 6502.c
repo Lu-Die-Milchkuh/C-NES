@@ -23,15 +23,17 @@ byte memory[2048] = {0};
 // Return next Byte, Immediate Addressing Mode
 byte getImmediate() {
     PC++;
-    return memory[PC];
+    byte data = read(PC);   
+    return data;
 }
 
 // Return Data from Zero Page, only capable of addressing first 256 Bytes of Memory
 byte getZPG() {
-    byte zpg_addr = 0;  // Zero Page Addrsss
+    byte zpg_addr = 0;  // Zero Page Address
     PC++;
-    zpg_addr = memory[PC];
-    return memory[zpg_addr];
+    zpg_addr = read(PC);
+    byte data = read(zpg_addr);
+    return data;
 
 }
 
@@ -40,8 +42,9 @@ byte getZPG() {
 byte getZPGX() {
     byte zpg_addr = 0;  // Zero Page Addrsss
     PC++;
-    zpg_addr = memory[PC] + X;  // Adding Offset
-    return memory[zpg_addr];
+    zpg_addr = read(PC) + X;  // Adding Offset
+    byte data = read(zpg_addr);
+    return data;
 }
 
 
@@ -51,14 +54,15 @@ byte getAbsolute() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = memory[PC];
+    highByte = read(PC);
     PC++;
-    lowByte = memory[PC];
+    lowByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
+    byte data = read(address);
 
-    return memory[address];
+    return data;
 }
 
 
@@ -68,15 +72,15 @@ byte getAbsoluteX() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = memory[PC];
+    highByte = read(PC);
     PC++;
-    lowByte = memory[PC];
+    lowByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += X;   // Adding Offset
-
-    return memory[address];
+    byte data = read(address);
+    return data;
 }
 
 
@@ -86,15 +90,16 @@ byte getAbsoluteY() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = memory[PC];
+    highByte = read(PC);
     PC++;
-    lowByte = memory[PC];
+    lowByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += Y;   // Adding Offset
+    byte data = read(address);
 
-    return memory[address];
+    return data;
 }
 
 
@@ -110,18 +115,19 @@ byte getIndirect() {
     word real_addr = 0;
 
     PC++;
-    tmp_addr1 = memory[PC];
+    tmp_addr1 = read(PC);
 
     PC++;
-    tmp_addr2 = memory[PC];
+    tmp_addr2 = read(PC);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
 
-    real_addr = memory[tmp_addr] << 8 | memory[(tmp_addr+1)];
+    real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
+    byte data = read(real_addr);
 
-    return memory[real_addr];
+    return data;
 }
 
 // Indirect Addressing Mode + Offset X
@@ -132,17 +138,18 @@ byte getIndirectX() {
     word real_addr = 0;
 
     PC++;
-    tmp_addr1 = memory[PC] + X;
+    tmp_addr1 = read(PC) + X;
 
     PC++;
-    tmp_addr2 = memory[PC] + X;
+    tmp_addr2 = read(PC) + X;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
-    real_addr = memory[tmp_addr] << 8 | memory[(tmp_addr+1)];
+    real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
 
-    return memory[real_addr];
+    byte data = read(real_addr);
+    return data;
 }
 
 // Indirect Addressing Mode + Offset Y
@@ -153,17 +160,18 @@ byte getIndirectY() {
     word real_addr = 0;
 
     PC++;
-    tmp_addr1 = memory[PC] + Y ;
+    tmp_addr1 = read(PC) + Y ;
 
     PC++;
-    tmp_addr2 = memory[PC] + Y;
+    tmp_addr2 = read(PC) + Y;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
-    real_addr = memory[tmp_addr] << 8 | memory[(tmp_addr+1)];
+    real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
 
-    return memory[real_addr];
+    byte data = read(real_addr);
+    return data;
 }
 
 
@@ -314,14 +322,16 @@ void CLV() {
 
 // Push A on Stack
 void PHA() {
-    memory[SP] = A;
+    write(A,SP);
+    //memory[SP] = A;
     SP--;
 }
 
 
 // Pull A from Stack
 void PLA() {
-    A = memory[SP];
+    //A = memory[SP];
+    A = read(SP);
     
     if(A == 0) 
     {   // Set Zero Flag
@@ -338,13 +348,15 @@ void PLA() {
 
 // Push Status Register on Stack
 void PHP() {
-    memory[SP] = P;
+    //memory[SP] = P;
+    write(P,SP);
     SP--;
 }
 
 // Pull Status Register from Stack
 void PLP() {
-    P = memory[SP];
+    //P = memory[SP];
+    P = read(SP);
     SP++;
 }
 
@@ -377,15 +389,17 @@ void INY() {
 
 // Increase Memory by 1
 void INC(word address) {
-    memory[address]++;
+    byte foo = read(address);
+    foo++;
+    write(foo,address);
 
-    if(memory[address] == 0) 
+    if(read(address) == 0) 
     {
         setBit(&P,1);
     }
 
     clearBit(&P,7);
-    P |= getBit(&(memory[address]),7);
+    P |= getBit(&foo,7);
 
 }
 
@@ -489,17 +503,20 @@ void TXS(){
 
 // Store A in Memory(Address might be only 8-Bit)
 void STA(word address) {
-    memory[address] = A;
+    //memory[address] = A;
+    write(A,address);
 }
 
 // Store X in Memory
 void STX(word address) {
-    memory[address] = X;
+    //memory[address] = X;
+    write(X,address);
 }
 
 // Store Y in Memory
 void STY(word address) {
-    memory[address] = Y;
+    //memory[address] = Y;
+    write(Y,address);
 }
 
 // FLAGS NOT DONE
@@ -604,22 +621,108 @@ void SBC(byte data) {
 }
 
 
+
 // Return from Interrupt
-void RTI() {}
+void RTI() {
+    
+    
+}
 
 // Return from Subroutine
-void RTS() {}
+void RTS() {
+    PC = read(SP);
+    SP++;
+}
 
-int main() {
-    /*
-    LDA(255);
-    printf("A:\t%d\tP:\t%X\t",A,P);
-    bin(P,8);
-    ADC(1);
-    printf("\nA:\t%d\tP:\t%X\t",A,P);
-    bin(P,8);
-    */
-    
-    
-    
+// Force Break, software interrupt
+void BRK() {
+    write((PC+2),SP); // Push return address to Stack
+    SP--;
+    // Set Break Bit
+    setBit(&P,5);
+    write(P,SP); // Push Status Register to Stack
+    SP--;
+
+}
+
+// Branch if Overflow Bit is 0
+void BVC() {
+    // Skip n-bytes if overflow is cleared
+    if(getBit(&P,6) == 0x00) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if Overflow Bit is 1
+void BVS() {
+    // Skip n-bytes if overflow is set
+    if(getBit(&P,6) == 0x40) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if Result was zero
+void BEQ() {
+  if(getBit(&P,1) == 0x2) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if Result was NOT zero 
+void BNE() {
+    if(getBit(&P,1) == 0x00) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if Result was positive
+void BPE() {
+    if(getBit(&P,7) == 0x00) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if Result was negative
+void BMI() {
+    if(getBit(&P,7) == 0x80) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if Carry is 0
+void BCC() {
+    if(getBit(&P,0) == 0x00) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
+}
+
+// Branch if carry is 1
+void BCS() {
+    if(getBit(&P,0) == 0x01) 
+    {   
+        PC++;
+        byte foo = read(PC);
+        PC = PC + foo;
+    }
 }
