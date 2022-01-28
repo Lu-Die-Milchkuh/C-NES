@@ -189,9 +189,9 @@ word getAbsoluteAddr() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = memory[PC];
+    highByte = read(PC);
     PC++;
-    lowByte = memory[PC];
+    lowByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
@@ -577,9 +577,18 @@ void JMP(word address) {
     PC = address;
 }
 
+// Jump to Subroutine
+void JSR() {
+    write((PC+2),SP); // Push return address to Stack
+    SP--;
+    word address = getAbsoluteAddr();
+    PC = read(address);
+
+}
+
 // Add memory to A
 void ADC(byte data) {
-    unsigned short temp = A + data; // Temp Variable to check for Overflow
+    word temp = A + data; // Temp Variable to check for Overflow
     A = A + data;
 
     if(temp > 255) // Value > 255 means overflow
