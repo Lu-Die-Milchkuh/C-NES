@@ -21,7 +21,7 @@ void write(byte data,word address) {
     */
     else if(address >= 0x2000 && address <= 0x3FFF)
     {
-
+        ppu_memory[(address & 0x0007)] = data;
     }
 }
 
@@ -40,7 +40,7 @@ byte read(word address) {
     // Read from PPU Memory
     else if(address >= 0x2000 && address <= 0x3FFF)
     {
-        // addr & 0x0007
+        data = ppu_memory[(address & 0x0007)];
     }
     return data;
 }
