@@ -1,10 +1,12 @@
 CC = gcc
-CFLAGS = -Wall -O2 
-FILES = *.c
+CFLAGS = -Wall -O2 -lSDL2
+FILES = 6502.c Bus.c HelperFunc.c PPU.c
 OUT_FILE = CNES
 
-default: compile 
+default: dir compile 
+
+dir:
+	mkdir -p build
 
 compile:
-	mkdir build
 	$(CC) $(CFLAGS) $(FILES) -o build/$(OUT_FILE)
