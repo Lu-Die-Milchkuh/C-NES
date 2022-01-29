@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "6502.h"
 #include "HelperFunc.h"
 #include "Bus.h"
@@ -160,16 +161,16 @@ byte getIndirectY() {
     word real_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC) + Y ;
+    tmp_addr1 = read(PC)  ;
 
     PC++;
-    tmp_addr2 = read(PC) + Y;
+    tmp_addr2 = read(PC) ;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
     real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
-
+    real_addr += Y;
     byte data = read(real_addr);
     return data;
 }
@@ -184,6 +185,7 @@ byte getIndirectY() {
     
 */
 
+// Returns absolute Address
 word getAbsoluteAddr() {
     word address = 0;
     byte highByte,lowByte;
@@ -199,6 +201,7 @@ word getAbsoluteAddr() {
     return address;
 }
 
+// Returns absolute, X-indexed Address
 word getAbsoluteXAddr() {
     word address = 0;
     byte highByte,lowByte;
@@ -215,6 +218,14 @@ word getAbsoluteXAddr() {
     return address;
 }
 
+// Returns zeropage, X-indexed Address
+word getZPGXAddr() {
+    byte zpg_addr = 0;  // Zero Page Addrsss
+    PC++;
+    zpg_addr = read(PC) + X;  // Adding Offset
+    
+    return zpg_addr;
+}
 
 
 /*
@@ -537,6 +548,43 @@ void LSR(byte* data) {
     *data = *data >> 1;
 }
 
+// ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
+void ASL(word address) {
+    byte data = read(address);
+    byte oldCarry = getBit(&data,7) >> 7;
+
+    P |= oldCarry;
+    data = data << 1;
+    clearBit(&data,0);
+
+    if(data == 0)
+    {
+        setBit(&P,1);
+    }
+
+    clearBit(&P,7);
+    P |= getBit(&data,7);
+    // Writing new Value back to memory location
+    write(data,address);
+}
+
+// ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
+void ASL_A(){
+    byte oldCarry = getBit(&A,7) >> 7;
+    P |= oldCarry;
+    A = A << 1;
+    clearBit(&A,0);
+
+    if(A == 0)
+    {
+        setBit(&P,1);
+    }
+
+    clearBit(&P,7);
+    P |= getBit(&A,7);
+
+}
+
 
 // Load A with data
 void LDA(byte data) {
@@ -630,10 +678,14 @@ void SBC(byte data) {
 }
 
 
-
 // Return from Interrupt
 void RTI() {
-    
+    byte oldStatus = P;
+    P = read(SP);
+    SP++;
+
+    PC = read(SP);
+    SP++;
     
 }
 
@@ -663,6 +715,9 @@ void BVC() {
         byte foo = read(PC);
         PC = PC + foo;
     }
+    else {
+       PC++; 
+    }
 }
 
 // Branch if Overflow Bit is 1
@@ -674,6 +729,9 @@ void BVS() {
         byte foo = read(PC);
         PC = PC + foo;
     }
+    else {
+       PC++; 
+    }
 }
 
 // Branch if Result was zero
@@ -683,6 +741,9 @@ void BEQ() {
         PC++;
         byte foo = read(PC);
         PC = PC + foo;
+    }
+    else {
+       PC++; 
     }
 }
 
@@ -694,15 +755,21 @@ void BNE() {
         byte foo = read(PC);
         PC = PC + foo;
     }
+    else {
+       PC++; 
+    }
 }
 
 // Branch if Result was positive
-void BPE() {
+void BPL() {
     if(getBit(&P,7) == 0x00) 
     {   
         PC++;
         byte foo = read(PC);
         PC = PC + foo;
+    }
+    else {
+       PC++; 
     }
 }
 
@@ -714,6 +781,9 @@ void BMI() {
         byte foo = read(PC);
         PC = PC + foo;
     }
+    else {
+       PC++; 
+    }
 }
 
 // Branch if Carry is 0
@@ -723,6 +793,9 @@ void BCC() {
         PC++;
         byte foo = read(PC);
         PC = PC + foo;
+    }
+    else {
+       PC++; 
     }
 }
 
@@ -734,4 +807,496 @@ void BCS() {
         byte foo = read(PC);
         PC = PC + foo;
     }
+    else {
+       PC++; 
+    }
 }
+
+// Compare Accumulator with data
+void CMP(byte data) {
+    byte result = A - data;
+
+    // Set zero Bit if Result is 0 (A and data same value)
+    if(A == data)
+    {
+        setBit(&P,1);
+    }
+
+    if(A >= data) 
+    {
+        setBit(&P,0); // Set Carry
+    }
+
+    // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
+    clearBit(&P,7);
+    P |= getBit(&result,7);
+}
+
+
+// Compare X with data
+void CPX(byte data) {
+    byte result = X - data;
+
+    // Set zero Bit if Result is 0 (X and data same value)
+    if(X == data)
+    {
+        setBit(&P,1);
+    }
+
+    if(X >= data) 
+    {
+        setBit(&P,0); // Set Carry
+    }
+
+    // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
+    clearBit(&P,7);
+    P |= getBit(&result,7);
+}
+
+// Compare Y with data
+void CPY(byte data) {
+    byte result = Y - data;
+
+    // Set zero Bit if Result is 0 (Y and data same value)
+    if(Y == data)
+    {
+        setBit(&P,1);
+    }
+
+    if(Y >= data) 
+    {
+        setBit(&P,0); // Set Carry
+    }
+
+    // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
+    clearBit(&P,7);
+    P |= getBit(&result,7);
+}
+
+// Bit Test -> check if Bits of a target memory location are set
+void BIT(word address) {
+    byte data = read(address);
+    byte result = A & data;
+
+    if(result == 0)
+    {
+        setBit(&P,1);
+    }
+
+    // Copy Bit 7 and 6 of the value to
+    clearBit(&P,7);
+    clearBit(&P,6);
+    P |= getBit(&data,7);
+    P |= getBit(&data,6);
+}
+
+
+// Decoding and executing instructions, might be better to create a loookup table in the future
+void CPU_RUN() {
+    byte opcode = read(PC); // opcode -> byte that identifies the instruction
+
+    byte data = 0; // Helper Var to store data
+    byte address = 0; // Helper Var to store an address
+
+    switch(opcode) {
+        case 0x00: // BRK
+            BRK(); // NOT SURE IF PC++
+            break;
+
+        case 0x01: // ORA X,ind
+            data = getIndirectX();
+            ORA(data);
+            PC++;
+            break;
+
+        case 0x02: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x03: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x04: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x05: // ORA zpg
+            address = getImmediate(); // Zero Page Address are always 1-Byte 
+            data = read(address);
+            ORA(data);
+            PC++;
+            break;
+        
+        case 0x06: // ASL zpg
+            address = getImmediate(); // Zero Page Address are always 1-Byte 
+            data = read(address);
+            ASL(data);
+            PC++;
+            break;
+        
+        case 0x07: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x08: // PHP impl
+            PHP();
+            PC++;
+            break;
+        
+        case 0x09: // ORA imm
+            data = getImmediate();
+            ORA(data);
+            PC++;
+            break;
+        
+        case 0x0A: // ASL A
+            ASL_A();
+            PC++;
+            break;
+        
+        case 0x0B: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x0C: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x0D: // ORA abs
+            data = getAbsolute();
+            ORA(data);
+            PC++;
+            break;
+        
+        case 0x0E: // ASL abs
+            address = getAbsoluteAddr();
+            ASL(address);
+            PC++;
+            break;
+        
+        case 0x0F: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x10: // BPL
+            BPL();
+            break;
+        
+        case 0x11: // ORA ind,Y
+            data = getIndirectY();
+            ORA(data);
+            PC++;
+            break;
+        
+        case 0x12: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x13: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x14: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x15: // ORA zpg,x
+            data = getZPGX();
+            ORA(data);
+            PC++;
+            break;
+        
+        case 0x16: // ASL zpg,x
+            address = getZPGXAddr();
+            ASL(address);
+            PC++;
+            break;
+        
+        case 0x17: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x18: // CLC
+            CLC();
+            break;
+        
+        case 0x19: // ORA abs,y
+            data = getAbsoluteX();
+            ORA(data);
+            break;
+        
+        case 0x1A: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x1B: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x1C: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x1D: // ORA abs,x
+            data = getAbsoluteX();
+            ORA(data);
+            PC++;
+            break;
+        
+        case 0x1E: // ASL abs,x
+            address = getAbsoluteXAddr();
+            ASL(address);
+            PC++;
+            break;
+        
+        case 0x1F: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x20: // JSR abs
+            JSR();
+            break;
+        
+        case 0x21: // AND X,ind
+            data = getIndirectX();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x22: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x23: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x24: // BIT zpg
+            address = getImmediate();
+            BIT(address);
+            PC++;
+            break;
+        
+        case 0x25: // AND zpg
+            data = getZPG();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x26: // ROL zpg
+            address = getZPG();
+            data = read(address);
+            ROL(&data);
+            write(data,address); // Write value back to Memory
+            PC++;
+            break;
+        
+        case 0x27: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x28: // PLP
+            PLP();
+            PC++;
+            break;
+        
+        case 0x29: // AND imm
+            data = getImmediate();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x2A: // ROL A
+            ROL(&A);
+            PC++;
+            break;
+        
+        case 0x2B: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x2C: // BIT abs
+            address = getAbsoluteAddr();
+            BIT(address);
+            PC++;
+            break;
+        
+        case 0x2D: // AND abs
+            data = getAbsolute();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x2E: // ROL abs
+            address = getAbsoluteAddr();
+            data = read(address);
+            ROL(&data);
+            write(data,address);
+            PC++;
+            break;
+        
+        case 0x2F: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x30: // BMI rel
+            BMI();
+            break;
+        
+        case 0x31: // AND ind,y
+            data = getIndirectY();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x32: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x33: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x34: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x35: // AND zpg,x
+            data = getZPGX();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x36: // ROL zpg,x
+            address = getZPGXAddr();
+            data = read(address);
+            ROL(&data);
+            write(data,address);
+            PC++;
+            break;
+        
+        case 0x37: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x38: // SEC
+            SEC();
+            PC++;
+            break;
+        
+        case 0x39: // AND abs,y
+            data = getAbsoluteY();
+            AND(data);
+            PC++;
+            break;
+        
+        case 0x3A: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x3B: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x3C: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x3D: // AND abs,x
+            data = getAbsoluteX();
+            AND(data);
+            PC++;
+            break;
+
+        case 0x3E: // ROL abs,x
+            address = getAbsoluteXAddr();
+            data = read(address);
+            ROL(&data);
+            write(data,address);
+            PC++;
+            break;
+
+        case 0x3F: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x40: // RTI
+            RTI();
+            break;
+        
+        case 0x41: // EOR x,ind
+            data = getIndirectX();
+            EOR(data);
+            PC++;
+            break;
+
+        case 0x42: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x43: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+
+        case 0x44: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x45: // EOR zpg
+            data = getZPG();
+            EOR(data);
+            PC++;
+            break;
+        
+        case 0x46: // LSR zpg
+            address = getImmediate();
+            data = read(address);
+            LSR(&data);
+            write(data,address);
+            PC++;
+            break;
+        
+        case 0x47: // ILLEGAL OPCODE
+            printf("ILLEGAL OPCODE: %X",opcode);
+            exit(-1);
+            break;
+        
+        case 0x48: // PHA
+            PHA();
+            PC++;
+            break;
+    }   
+}
+
