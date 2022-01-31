@@ -34,7 +34,10 @@ extern byte P;
 */      
 extern byte memory[2048];
 
+// Reset all internal Register
+void CPU_RESET();
 
-
+// Execute Instruction
+void CPU_RUN();
 
 
