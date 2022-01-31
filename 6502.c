@@ -1095,7 +1095,7 @@ void CPU_RESET() {
 }
 
 
-// Decoding and executing instructions, might be better to create a lookup table in the future
+// Decoding and executing instructions
 void CPU_RUN() {
     
 
