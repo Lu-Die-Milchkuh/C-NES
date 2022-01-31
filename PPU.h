@@ -1,10 +1,6 @@
-#ifndef byte
 typedef unsigned char byte; // 8-Bit
-#endif
-
-#ifndef word
 typedef unsigned short word; // 16-Bit
-#endif
+
 
 extern byte ppu_memory[8192];
 

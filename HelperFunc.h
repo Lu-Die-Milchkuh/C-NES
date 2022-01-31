@@ -1,10 +1,6 @@
-#ifndef byte
 typedef unsigned char byte;     // 8-Bit
-#endif
-
-#ifndef word
 typedef unsigned short word;    //16-Bit   
-#endif
+
 
 // Set Bit @ Index, set to 1
 void setBit(byte* reg,byte index);

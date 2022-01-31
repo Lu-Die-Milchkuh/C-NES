@@ -1,5 +1,11 @@
+#ifndef _STDIO_H
 #include <stdio.h>
+#endif
+
+#ifndef	_STDLIB_H
 #include <stdlib.h>
+#endif
+
 #include "6502.h"
 #include "HelperFunc.h"
 #include "Bus.h"

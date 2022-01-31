@@ -1,4 +1,4 @@
-#ifndef STDIO_H
+#ifndef _STDIO_H
 #include <stdio.h>
 #endif
 #include "HelperFunc.h"
