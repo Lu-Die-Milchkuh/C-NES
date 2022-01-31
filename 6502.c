@@ -12,6 +12,13 @@ byte SP = 0;
 byte P = 0;
 byte memory[2048] = {0};
 
+// Var to store temporary data or address
+byte temp_data = 0;
+word temp_address = 0;
+
+
+// opcode -> byte that identifies the instruction
+byte opcode = 0;
 
 /*
 
@@ -24,8 +31,8 @@ byte memory[2048] = {0};
 // Return next Byte, Immediate Addressing Mode
 byte getImmediate() {
     PC++;
-    byte data = read(PC);   
-    return data;
+    temp_data = read(PC);   
+    return 0;
 }
 
 // Return Data from Zero Page, only capable of addressing first 256 Bytes of Memory
@@ -33,8 +40,8 @@ byte getZPG() {
     byte zpg_addr = 0;  // Zero Page Address
     PC++;
     zpg_addr = read(PC);
-    byte data = read(zpg_addr);
-    return data;
+    temp_data = read(zpg_addr);
+    return 0;
 
 }
 
@@ -44,8 +51,17 @@ byte getZPGX() {
     byte zpg_addr = 0;  // Zero Page Addrsss
     PC++;
     zpg_addr = read(PC) + X;  // Adding Offset
-    byte data = read(zpg_addr);
-    return data;
+    temp_data = read(zpg_addr);
+    return 0;
+}
+
+// Return Data from Zero Page + Y(offset)
+byte getZPGY() {
+    byte zpg_addr = 0;  // Zero Page Addrsss
+    PC++;
+    zpg_addr = read(PC) + Y;  // Adding Offset
+    temp_data = read(zpg_addr);
+    return 0;
 }
 
 
@@ -61,9 +77,9 @@ byte getAbsolute() {
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
-    byte data = read(address);
+    temp_data = read(address);
 
-    return data;
+    return 0;
 }
 
 
@@ -80,8 +96,8 @@ byte getAbsoluteX() {
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += X;   // Adding Offset
-    byte data = read(address);
-    return data;
+    temp_data = read(address);
+    return 0;
 }
 
 
@@ -98,9 +114,9 @@ byte getAbsoluteY() {
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += Y;   // Adding Offset
-    byte data = read(address);
+    temp_data = read(address);
 
-    return data;
+    return 0;
 }
 
 
@@ -117,18 +133,17 @@ byte getIndirect() {
 
     PC++;
     tmp_addr1 = read(PC);
-
     PC++;
     tmp_addr2 = read(PC);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
+    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
 
-    real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
-    byte data = read(real_addr);
+    real_addr = read(tmp_addr+1) << 8 | read(tmp_addr);
+    temp_data = read(real_addr);
 
-    return data;
+    return 0;
 }
 
 // Indirect Addressing Mode + Offset X
@@ -140,17 +155,16 @@ byte getIndirectX() {
 
     PC++;
     tmp_addr1 = read(PC) + X;
-
     PC++;
     tmp_addr2 = read(PC) + X;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
-    real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
+    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    real_addr = read(tmp_addr+1) << 8 | read(tmp_addr);
 
-    byte data = read(real_addr);
-    return data;
+    temp_data = read(real_addr);
+    return 0;
 }
 
 // Indirect Addressing Mode + Offset Y
@@ -161,20 +175,23 @@ byte getIndirectY() {
     word real_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC)  ;
-
+    tmp_addr1 = read(PC);
     PC++;
     tmp_addr2 = read(PC) ;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    tmp_addr = tmp_addr1 << 8 | tmp_addr2; 
-    real_addr = read(tmp_addr) << 8 | read((tmp_addr+1));
+    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    real_addr = read(tmp_addr+1) << 8 | read(tmp_addr);
     real_addr += Y;
-    byte data = read(real_addr);
-    return data;
+    temp_data = read(real_addr);
+    return 0;
 }
 
+// Some instrctions are implied . which means all the needed infromations are already present
+byte noMode() {
+    return 0;
+}
 
 
 /*
@@ -186,46 +203,177 @@ byte getIndirectY() {
 */
 
 // Returns absolute Address
-word getAbsoluteAddr() {
+byte getAbsoluteAddr() {
     word address = 0;
     byte highByte,lowByte;
 
     PC++;
-    highByte = read(PC);
+    lowByte = read(PC); 
     PC++;
-    lowByte = read(PC);
+    highByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
-    address = (highByte << 8 | lowByte); 
+    temp_address = (highByte << 8 | lowByte); 
 
-    return address;
+    return 0;
 }
 
 // Returns absolute, X-indexed Address
-word getAbsoluteXAddr() {
-    word address = 0;
+byte getAbsoluteXAddr() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = memory[PC];
+    lowByte = read(PC);
     PC++;
-    lowByte = memory[PC];
+    highByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
-    address = (highByte << 8 | lowByte); 
-    address += X;   // Adding Offset
+    temp_address = (highByte << 8 | lowByte); 
+    temp_address += X;   // Adding Offset
 
-    return address;
+    return 0;
+}
+
+
+// Returns absolute, Y-indexed Address
+byte getAbsoluteYAddr() {
+    byte highByte,lowByte;
+
+    PC++;
+    lowByte = read(PC);
+    PC++;
+    highByte = read(PC);
+
+    // Creating a 16 Bit Address out of 2 Bytes
+    temp_address = (highByte << 8 | lowByte); 
+    temp_address += Y;   // Adding Offset
+
+    return 0;
+}
+
+
+// Returns zeropage address
+byte getZPGAddr() {
+    byte zpg_addr = 0;  // Zero Page Address
+    PC++;
+    temp_address = read(PC);
+    
+    return 0;
+
 }
 
 // Returns zeropage, X-indexed Address
-word getZPGXAddr() {
+byte getZPGXAddr() {
     byte zpg_addr = 0;  // Zero Page Addrsss
     PC++;
-    zpg_addr = read(PC) + X;  // Adding Offset
+    temp_address = read(PC) + X;  // Adding Offset
     
-    return zpg_addr;
+    return 0;
 }
+
+// Returns zeropage, X-indexed Address
+byte getZPGYAddr() {
+    byte zpg_addr = 0;  // Zero Page Addrsss
+    PC++;
+    temp_address = read(PC) + Y;  // Adding Offset
+    
+    return 0;
+}
+
+
+// Returns an indirect Address
+byte getIndirectAddr() {
+    byte tmp_addr1 = 0; // HighByte
+    byte tmp_addr2 = 0; //LowByte
+    word tmp_addr = 0;  //Placeholder Address
+    word real_addr = 0;
+
+    PC++;
+    tmp_addr1 = read(PC);
+    PC++;
+    tmp_addr2 = read(PC);
+
+    // Real Address has to be calculated, from 
+    // the content of the given address and (address+1)!
+    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+
+    temp_address = read(tmp_addr+1) << 8 | read(tmp_addr);
+    
+    return 0;
+}
+
+// Returns indirect, x-indexed Address
+byte getIndirectXAddr() {
+    byte tmp_addr1 = 0;
+    byte tmp_addr2 = 0;
+    word tmp_addr = 0;
+    word real_addr = 0;
+
+    PC++;
+    tmp_addr1 = read(PC) + X;
+    PC++;
+    tmp_addr2 = read(PC) + X;
+
+    // Real Address has to be calculated, from 
+    // the content of the given address and (address+1)!
+    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    temp_address = read(tmp_addr+1) << 8 | read(tmp_addr);
+
+    return 0;
+}
+
+// Returns indirect, y-indexed Address
+byte getIndirectYAddr() {
+    byte tmp_addr1 = 0;
+    byte tmp_addr2 = 0;
+    word tmp_addr = 0;
+    word real_addr = 0;
+
+    PC++;
+    tmp_addr1 = read(PC);
+    PC++;
+    tmp_addr2 = read(PC);
+
+    // Real Address has to be calculated, from 
+    // the content of the given address and (address+1)!
+    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    temp_address = read(tmp_addr+1) << 8 | read(tmp_addr);
+    temp_address += Y;
+
+    return 0;
+}
+
+
+/*
+
+**********************************************
+*               Lookup Tables                *
+**********************************************
+
+*/
+
+// Addressing Mode Lookup-table
+const byte (*mode_lookup[256])() = {
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPG,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsolute,&getAbsolute,&noMode, // 0x00-0x0F
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGX,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteX,&noMode, //0x10-0x1F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&getZPG,&getZPGXAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x20-0x2F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x30-0x3F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPG,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsoluteAddr,&getAbsolute,&getAbsolute,&noMode, // 0x40-0x4F
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteX,&noMode, //0x50-0x5F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getIndirectAddr,&getAbsolute,&getAbsoluteAddr,&noMode, //0x60-0x6F
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x70-0x7F
+                                        &noMode,&getIndirectXAddr,&noMode,&noMode,&getZPGAddr,&getZPGAddr,&getZPGAddr,&noMode,&noMode,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x80-0x8F
+                                        &noMode,&getIndirectYAddr,&noMode,&noMode,&getZPGXAddr,&getZPGXAddr,&getZPGYAddr,&noMode,&noMode,&getAbsoluteYAddr,&noMode,&noMode,&noMode,&getAbsoluteXAddr,&noMode,&noMode, //0x90-0x9F
+                                        &getImmediate,&getIndirectX,&getImmediate,&noMode,&getZPG,&getZPG,&getZPG,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsolute,&noMode, //0xA0-0xAF
+                                        &noMode,&getIndirectY,&noMode,&noMode,&getZPGX,&getZPGX,&getZPGY,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&getAbsoluteX,&getAbsoluteX,&getAbsoluteY,&noMode, //0xB0-0xBF
+                                        &getImmediate,&getIndirectX,&noMode,&noMode,&getZPG,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsoluteAddr,&noMode, //0xC0-0xCF
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0xD0-0xDF
+                                        &getImmediate,&getIndirectX,&noMode,&noMode,&getZPG,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsoluteAddr,&noMode, //0xE0-0xEF
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode //0xF0-0xFF
+};
+
+// Instruction Lookup-table
+const void (*inst_lookup[256])() = {};
 
 
 /*
@@ -236,10 +384,16 @@ word getZPGXAddr() {
 
 */
 
+// Incase an illegal/undocumented opcode occurs, exit
+void illegalInstrction() {
+    printf("ILLEGAL INSTRUCTION: %X",opcode);
+    exit(-1);
+}
+
 
 // Bitwise AND Memory with Accumulator
-void AND(byte data) {
-    A &= data;
+void AND() {
+    A &= temp_data;
 
     if(A == 0) 
     {   // Set Zero Flag
@@ -250,12 +404,12 @@ void AND(byte data) {
     // to 7th Bit of A
     clearBit(&P,7);
     P |= getBit(&A,7);
-
+    PC++;
 }
 
 // Bitwise XOR with Accumulator
-void EOR(byte data) {
-    A ^= data;
+void EOR() {
+    A ^= temp_data;
 
     if(A == 0) 
     {   // Set Zero Flag
@@ -266,11 +420,12 @@ void EOR(byte data) {
     // to 7th Bit of A
     clearBit(&P,7);
     P |= getBit(&A,7);
+    PC++;
 }
 
 // Bitwise OR with Accumulator
-void ORA(byte data) {
-    A |= data;
+void ORA() {
+    A |= temp_data;
     if(A == 0) 
     {   // Set Zero Flag
         setBit(&P,1);
@@ -280,68 +435,75 @@ void ORA(byte data) {
     // to 7th Bit of A
     clearBit(&P,7);
     P |= getBit(&A,7);
+    PC++;
 }
 
 
 // NO Operation -> do nothing
 void NOP() {
-
+    PC++;
 }
 
 
 // Set Decimal Flag
 void SED() {
     setBit(&P,3);
+    PC++;
 }
 
 
 // Set Interrupt Flag
 void SEI() {
     setBit(&P,2);
+    PC++;
 }
 
 
 // Set Carry Flag
 void SEC() {
     setBit(&P,0);
+    PC++;
 }
 
 
 // Clear Carry Flag
 void CLC() {
     clearBit(&P,0);
+    PC++;
 }
 
 
 // Clear Decimal Bit
 void CLD() {
     clearBit(&P,3);
+    PC++;
 }
 
 
 // Clear Interrupt Flag
 void CLI() {
     clearBit(&P,2);
+    PC++;
 }
 
 
 // Clear Overflow Flag
 void CLV() {
     clearBit(&P,6);
+    PC++;
 }
 
 
 // Push A on Stack
 void PHA() {
     write(A,SP);
-    //memory[SP] = A;
     SP--;
+    PC++;
 }
 
 
 // Pull A from Stack
 void PLA() {
-    //A = memory[SP];
     A = read(SP);
     
     if(A == 0) 
@@ -354,21 +516,22 @@ void PLA() {
     clearBit(&P,7);
     P |= getBit(&A,7);
     SP++;
+    PC++;
     
 }
 
 // Push Status Register on Stack
 void PHP() {
-    //memory[SP] = P;
     write(P,SP);
     SP--;
+    PC++;
 }
 
 // Pull Status Register from Stack
 void PLP() {
-    //P = memory[SP];
     P = read(SP);
     SP++;
+    PC++;
 }
 
 
@@ -383,6 +546,7 @@ void INX() {
 
     clearBit(&P,7);
     P |= getBit(&X,7);
+    PC++;
 }
 
 // Increase Y by 1
@@ -396,24 +560,25 @@ void INY() {
 
     clearBit(&P,7);
     P |= getBit(&Y,7);
+    PC++;
 }
 
 // Increase Memory by 1
-void INC(word address) {
-    byte foo = read(address);
+void INC() {
+    byte foo = read(temp_address);
     foo++;
-    write(foo,address);
+    write(foo,temp_address);
 
-    if(read(address) == 0) 
+    if(read(temp_address) == 0) 
     {
         setBit(&P,1);
     }
 
     clearBit(&P,7);
     P |= getBit(&foo,7);
-
+    PC++;
 }
-
+//DEC MISSING
 // Decrement X by 1
 void DEX() {
     X--;
@@ -425,6 +590,7 @@ void DEX() {
 
     clearBit(&P,7);
     P |= getBit(&X,7);
+    PC++;
 }
 
 // Decrement Y by 1
@@ -438,6 +604,7 @@ void DEY() {
 
     clearBit(&P,7);
     P |= getBit(&Y,7);
+    PC++;
 }
 
 // Transfer A to X
@@ -450,6 +617,7 @@ void TAX(){
 
     clearBit(&P,7);
     P |= getBit(&X,7);
+    PC++;
 }
 
 // Transfer A to Y
@@ -462,6 +630,7 @@ void TAY(){
 
     clearBit(&P,7);
     P |= getBit(&Y,7);
+    PC++;
 }
 
 // Transfer Stackpointer to X
@@ -474,6 +643,7 @@ void TSX(){
 
     clearBit(&P,7);
     P |= getBit(&X,7);
+    PC++;
 }
 
 // Transfer X to A
@@ -486,6 +656,7 @@ void TXA(){
 
     clearBit(&P,7);
     P |= getBit(&A,7);
+    PC++;
 }
 
 // Transfer Y to A
@@ -498,6 +669,7 @@ void TYA(){
 
     clearBit(&P,7);
     P |= getBit(&A,7);
+    PC++;
 }
 
 // Transfer X to Stackpointer
@@ -510,47 +682,58 @@ void TXS(){
 
     clearBit(&P,7);
     P |= getBit(&SP,7);
+    PC++;
 }
 
 // Store A in Memory(Address might be only 8-Bit)
-void STA(word address) {
-    //memory[address] = A;
-    write(A,address);
+void STA() {
+    write(A,temp_address);
+    PC++;
 }
 
 // Store X in Memory
-void STX(word address) {
-    //memory[address] = X;
-    write(X,address);
+void STX() {
+    write(X,temp_address);
+    PC++;
 }
 
 // Store Y in Memory
-void STY(word address) {
-    //memory[address] = Y;
-    write(Y,address);
+void STY() {
+    write(Y,temp_address);
+    PC++;
 }
 
 // FLAGS NOT DONE
 // Rotate Accumulator or Memory 1 Bit right
-void ROR(byte* data) {
-    *data = *data >> 1;
+void ROR() {
+    byte data = read(temp_address);
+    data = data >> 1;
+    write(data,temp_address);
+    PC++;
 }
 
 //FLAGS NOT DONE
 // Rotate Accumulator or Memory 1 Bit left
-void ROL(byte* data) {
-    *data = *data << 1;
+void ROL() {
+
+    byte data = read(temp_address);
+    data = data << 1;
+    write(data,temp_address);
+    PC++;
 }
 
 // FLAGS NOT DONE
 // Shift Bits to right by 1
-void LSR(byte* data) {
-    *data = *data >> 1;
+void LSR() {
+    byte data = read(temp_address);
+    data = data >> 1;
+    write(data,temp_address);
+    PC++;
 }
 
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
-void ASL(word address) {
-    byte data = read(address);
+void ASL() {
+    byte data = read(temp_address);
     byte oldCarry = getBit(&data,7) >> 7;
 
     P |= oldCarry;
@@ -565,7 +748,8 @@ void ASL(word address) {
     clearBit(&P,7);
     P |= getBit(&data,7);
     // Writing new Value back to memory location
-    write(data,address);
+    write(data,temp_address);
+    PC++;
 }
 
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
@@ -582,13 +766,13 @@ void ASL_A(){
 
     clearBit(&P,7);
     P |= getBit(&A,7);
-
+    PC++;
 }
 
 
 // Load A with data
-void LDA(byte data) {
-    A = data;
+void LDA() {
+    A = temp_data;
     if(A == 0) 
     {
         setBit(&P,1);
@@ -596,48 +780,51 @@ void LDA(byte data) {
 
     clearBit(&P,7);
     P |= getBit(&A,7);
+    PC++;
 }
 
 // Load X with data
-void LDX(byte data) {
-    X = data;
+void LDX() {
+    X = temp_data;
     if(X == 0) {
         setBit(&P,1);
     }
 
     clearBit(&P,7);
     P |= getBit(&X,7);
+    PC++;
 }
 
 // Load Y with data
-void LDY(byte data) {
-    Y = data;
+void LDY() {
+    Y = temp_data;
     if(Y == 0) {
         setBit(&P,1);
     }
     
     clearBit(&P,7);
     P |= getBit(&Y,7);
+    PC++;
 }
 
 // Jump to Address, set PC to given Address
-void JMP(word address) {
-    PC = address;
+void JMP() {
+    PC = temp_address;
 }
 
 // Jump to Subroutine
 void JSR() {
     write((PC+2),SP); // Push return address to Stack
     SP--;
-    word address = getAbsoluteAddr();
-    PC = read(address);
+    //word address = getAbsoluteAddr();
+    PC = read(temp_address);
 
 }
 
 // Add memory to A
-void ADC(byte data) {
-    word temp = A + data; // Temp Variable to check for Overflow
-    A = A + data;
+void ADC() {
+    word temp = A + temp_data; // Temp Variable to check for Overflow
+    A = A + temp_data;
 
     if(temp > 255) // Value > 255 means overflow
     {
@@ -652,19 +839,20 @@ void ADC(byte data) {
     // Load Sign Bit into Status Register
     clearBit(&P,7);
     P |= getBit(&Y,7);
+    PC++;
 }
 
 
 // NEED CHECKING FOR CARRY/Borrow
 // Substract memory from A
-void SBC(byte data) {
+void SBC() {
     // Checking for Underflow, ex. if A = 0, and we substract 1 from A -> A = 255
-    if(A < (A - data)) 
+    if(A < (A - temp_data)) 
     {
         setBit(&P,6);
     }
     // Substracting data from Accumulator
-    A = A - data;
+    A = A - temp_data;
 
     if(A == 0) 
     {
@@ -674,7 +862,7 @@ void SBC(byte data) {
     // Load Sign Bit into Status Register
     clearBit(&P,7);
     P |= getBit(&Y,7);
-
+    PC++;
 }
 
 
@@ -703,6 +891,7 @@ void BRK() {
     setBit(&P,5);
     write(P,SP); // Push Status Register to Stack
     SP--;
+    PC++; // NOT SURE
 
 }
 
@@ -813,16 +1002,16 @@ void BCS() {
 }
 
 // Compare Accumulator with data
-void CMP(byte data) {
-    byte result = A - data;
+void CMP() {
+    byte result = A - temp_data;
 
     // Set zero Bit if Result is 0 (A and data same value)
-    if(A == data)
+    if(A == temp_data)
     {
         setBit(&P,1);
     }
 
-    if(A >= data) 
+    if(A >= temp_data) 
     {
         setBit(&P,0); // Set Carry
     }
@@ -830,20 +1019,21 @@ void CMP(byte data) {
     // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
     clearBit(&P,7);
     P |= getBit(&result,7);
+    PC++;
 }
 
 
 // Compare X with data
-void CPX(byte data) {
-    byte result = X - data;
+void CPX() {
+    byte result = X - temp_data;
 
     // Set zero Bit if Result is 0 (X and data same value)
-    if(X == data)
+    if(X == temp_data)
     {
         setBit(&P,1);
     }
 
-    if(X >= data) 
+    if(X >= temp_data) 
     {
         setBit(&P,0); // Set Carry
     }
@@ -851,19 +1041,20 @@ void CPX(byte data) {
     // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
     clearBit(&P,7);
     P |= getBit(&result,7);
+    PC++;
 }
 
 // Compare Y with data
-void CPY(byte data) {
-    byte result = Y - data;
+void CPY() {
+    byte result = Y - temp_data;
 
     // Set zero Bit if Result is 0 (Y and data same value)
-    if(Y == data)
+    if(Y == temp_data)
     {
         setBit(&P,1);
     }
 
-    if(Y >= data) 
+    if(Y >= temp_data) 
     {
         setBit(&P,0); // Set Carry
     }
@@ -871,11 +1062,12 @@ void CPY(byte data) {
     // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
     clearBit(&P,7);
     P |= getBit(&result,7);
+    PC++;
 }
 
 // Bit Test -> check if Bits of a target memory location are set
-void BIT(word address) {
-    byte data = read(address);
+void BIT() {
+    byte data = read(temp_address);
     byte result = A & data;
 
     if(result == 0)
@@ -888,415 +1080,25 @@ void BIT(word address) {
     clearBit(&P,6);
     P |= getBit(&data,7);
     P |= getBit(&data,6);
+    PC++;
 }
 
 
-// Decoding and executing instructions, might be better to create a loookup table in the future
+// Reset internal CPU Register 
+void CPU_RESET() {
+    A = 0;
+    X = 0;
+    Y = 0;
+    P = 0;
+    PC = read(0xFFFD)  << 8 | read(0xFFFC); // Set PC to Reset Vector
+    SP = 0xFF;
+}
+
+
+// Decoding and executing instructions, might be better to create a lookup table in the future
 void CPU_RUN() {
-    byte opcode = read(PC); // opcode -> byte that identifies the instruction
+    
 
-    byte data = 0; // Helper Var to store data
-    byte address = 0; // Helper Var to store an address
-
-    switch(opcode) {
-        case 0x00: // BRK
-            BRK(); // NOT SURE IF PC++
-            break;
-
-        case 0x01: // ORA X,ind
-            data = getIndirectX();
-            ORA(data);
-            PC++;
-            break;
-
-        case 0x02: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x03: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x04: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x05: // ORA zpg
-            address = getImmediate(); // Zero Page Address are always 1-Byte 
-            data = read(address);
-            ORA(data);
-            PC++;
-            break;
-        
-        case 0x06: // ASL zpg
-            address = getImmediate(); // Zero Page Address are always 1-Byte 
-            data = read(address);
-            ASL(data);
-            PC++;
-            break;
-        
-        case 0x07: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x08: // PHP impl
-            PHP();
-            PC++;
-            break;
-        
-        case 0x09: // ORA imm
-            data = getImmediate();
-            ORA(data);
-            PC++;
-            break;
-        
-        case 0x0A: // ASL A
-            ASL_A();
-            PC++;
-            break;
-        
-        case 0x0B: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x0C: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x0D: // ORA abs
-            data = getAbsolute();
-            ORA(data);
-            PC++;
-            break;
-        
-        case 0x0E: // ASL abs
-            address = getAbsoluteAddr();
-            ASL(address);
-            PC++;
-            break;
-        
-        case 0x0F: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x10: // BPL
-            BPL();
-            break;
-        
-        case 0x11: // ORA ind,Y
-            data = getIndirectY();
-            ORA(data);
-            PC++;
-            break;
-        
-        case 0x12: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x13: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x14: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x15: // ORA zpg,x
-            data = getZPGX();
-            ORA(data);
-            PC++;
-            break;
-        
-        case 0x16: // ASL zpg,x
-            address = getZPGXAddr();
-            ASL(address);
-            PC++;
-            break;
-        
-        case 0x17: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x18: // CLC
-            CLC();
-            break;
-        
-        case 0x19: // ORA abs,y
-            data = getAbsoluteX();
-            ORA(data);
-            break;
-        
-        case 0x1A: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x1B: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x1C: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x1D: // ORA abs,x
-            data = getAbsoluteX();
-            ORA(data);
-            PC++;
-            break;
-        
-        case 0x1E: // ASL abs,x
-            address = getAbsoluteXAddr();
-            ASL(address);
-            PC++;
-            break;
-        
-        case 0x1F: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x20: // JSR abs
-            JSR();
-            break;
-        
-        case 0x21: // AND X,ind
-            data = getIndirectX();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x22: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x23: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x24: // BIT zpg
-            address = getImmediate();
-            BIT(address);
-            PC++;
-            break;
-        
-        case 0x25: // AND zpg
-            data = getZPG();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x26: // ROL zpg
-            address = getZPG();
-            data = read(address);
-            ROL(&data);
-            write(data,address); // Write value back to Memory
-            PC++;
-            break;
-        
-        case 0x27: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x28: // PLP
-            PLP();
-            PC++;
-            break;
-        
-        case 0x29: // AND imm
-            data = getImmediate();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x2A: // ROL A
-            ROL(&A);
-            PC++;
-            break;
-        
-        case 0x2B: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x2C: // BIT abs
-            address = getAbsoluteAddr();
-            BIT(address);
-            PC++;
-            break;
-        
-        case 0x2D: // AND abs
-            data = getAbsolute();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x2E: // ROL abs
-            address = getAbsoluteAddr();
-            data = read(address);
-            ROL(&data);
-            write(data,address);
-            PC++;
-            break;
-        
-        case 0x2F: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x30: // BMI rel
-            BMI();
-            break;
-        
-        case 0x31: // AND ind,y
-            data = getIndirectY();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x32: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x33: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x34: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x35: // AND zpg,x
-            data = getZPGX();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x36: // ROL zpg,x
-            address = getZPGXAddr();
-            data = read(address);
-            ROL(&data);
-            write(data,address);
-            PC++;
-            break;
-        
-        case 0x37: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x38: // SEC
-            SEC();
-            PC++;
-            break;
-        
-        case 0x39: // AND abs,y
-            data = getAbsoluteY();
-            AND(data);
-            PC++;
-            break;
-        
-        case 0x3A: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x3B: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x3C: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x3D: // AND abs,x
-            data = getAbsoluteX();
-            AND(data);
-            PC++;
-            break;
-
-        case 0x3E: // ROL abs,x
-            address = getAbsoluteXAddr();
-            data = read(address);
-            ROL(&data);
-            write(data,address);
-            PC++;
-            break;
-
-        case 0x3F: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x40: // RTI
-            RTI();
-            break;
-        
-        case 0x41: // EOR x,ind
-            data = getIndirectX();
-            EOR(data);
-            PC++;
-            break;
-
-        case 0x42: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x43: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-
-        case 0x44: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x45: // EOR zpg
-            data = getZPG();
-            EOR(data);
-            PC++;
-            break;
-        
-        case 0x46: // LSR zpg
-            address = getImmediate();
-            data = read(address);
-            LSR(&data);
-            write(data,address);
-            PC++;
-            break;
-        
-        case 0x47: // ILLEGAL OPCODE
-            printf("ILLEGAL OPCODE: %X",opcode);
-            exit(-1);
-            break;
-        
-        case 0x48: // PHA
-            PHA();
-            PC++;
-            break;
-    }   
+    
 }
 
