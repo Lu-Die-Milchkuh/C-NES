@@ -204,7 +204,6 @@ byte noMode() {
 
 // Returns absolute Address
 byte getAbsoluteAddr() {
-    word address = 0;
     byte highByte,lowByte;
 
     PC++;
@@ -254,7 +253,6 @@ byte getAbsoluteYAddr() {
 
 // Returns zeropage address
 byte getZPGAddr() {
-    byte zpg_addr = 0;  // Zero Page Address
     PC++;
     temp_address = read(PC);
     
@@ -264,7 +262,6 @@ byte getZPGAddr() {
 
 // Returns zeropage, X-indexed Address
 byte getZPGXAddr() {
-    byte zpg_addr = 0;  // Zero Page Addrsss
     PC++;
     temp_address = read(PC) + X;  // Adding Offset
     
@@ -273,7 +270,6 @@ byte getZPGXAddr() {
 
 // Returns zeropage, X-indexed Address
 byte getZPGYAddr() {
-    byte zpg_addr = 0;  // Zero Page Addrsss
     PC++;
     temp_address = read(PC) + Y;  // Adding Offset
     
@@ -286,7 +282,6 @@ byte getIndirectAddr() {
     byte tmp_addr1 = 0; // HighByte
     byte tmp_addr2 = 0; //LowByte
     word tmp_addr = 0;  //Placeholder Address
-    word real_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC);
@@ -307,7 +302,6 @@ byte getIndirectXAddr() {
     byte tmp_addr1 = 0;
     byte tmp_addr2 = 0;
     word tmp_addr = 0;
-    word real_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC) + X;
@@ -327,7 +321,6 @@ byte getIndirectYAddr() {
     byte tmp_addr1 = 0;
     byte tmp_addr2 = 0;
     word tmp_addr = 0;
-    word real_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC);
@@ -1084,6 +1077,15 @@ void BIT() {
 }
 
 
+/*
+
+**********************************************
+*       CPU Functions                        *
+**********************************************
+
+*/
+
+
 // Reset internal CPU Register 
 void CPU_RESET() {
     A = 0;
@@ -1098,7 +1100,13 @@ void CPU_RESET() {
 // Decoding and executing instructions
 void CPU_RUN() {
     
+    opcode = read(PC);
 
+    // Checking which addressing mode the instruction will be using
+    (*mode_lookup[opcode])(); 
+
+    // Checking which instruction corresponds to the opcode, then executing thath instruction
+    (*inst_lookup[opcode])();
     
 }
 
