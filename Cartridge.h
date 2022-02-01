@@ -1,7 +1,9 @@
 typedef unsigned char byte;
 typedef unsigned short word;
 
-extern byte* cartridge_memory;
+// Pointer containing content of ROM
+extern byte* cartridge_pgr_memory;
+extern byte* cartridge_chr_memory;
 
 
 void loadROM(char* path);
