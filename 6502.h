@@ -41,3 +41,4 @@ void CPU_RESET();
 void CPU_RUN();
 
 
+void CPU_STATUS();
