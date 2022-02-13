@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -O2 -lSDL2
-FILES = 6502.c Bus.c HelperFunc.c PPU.c
+FILES = 6502.c Bus.c HelperFunc.c PPU.c Mapper.c Cartridge.c
 OUT_FILE = CNES
 
 default: dir compile 
