@@ -346,55 +346,6 @@ byte getIndirectYAddr() {
 /*
 
 **********************************************
-*               Lookup Tables                *
-**********************************************
-
-*/
-
-// Addressing Mode Lookup-table
-const byte (*mode_lookup[256])() = {
-                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsolute,&getAbsoluteAddr,&noMode, // 0x00-0x0F
-                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x10-0x1F
-                                        &noMode,&getIndirectX,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x20-0x2F
-                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x30-0x3F
-                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsoluteAddr,&getAbsolute,&getAbsoluteAddr,&noMode, // 0x40-0x4F
-                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x50-0x5F
-                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getIndirectAddr,&getAbsolute,&getAbsoluteAddr,&noMode, //0x60-0x6F
-                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x70-0x7F
-                                        &noMode,&getIndirectXAddr,&noMode,&noMode,&getZPGAddr,&getZPGAddr,&getZPGAddr,&noMode,&noMode,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x80-0x8F
-                                        &noMode,&getIndirectYAddr,&noMode,&noMode,&getZPGXAddr,&getZPGXAddr,&getZPGYAddr,&noMode,&noMode,&getAbsoluteYAddr,&noMode,&noMode,&noMode,&getAbsoluteXAddr,&noMode,&noMode, //0x90-0x9F
-                                        &getImmediate,&getIndirectX,&getImmediate,&noMode,&getZPG,&getZPG,&getZPG,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsolute,&noMode, //0xA0-0xAF
-                                        &noMode,&getIndirectY,&noMode,&noMode,&getZPGX,&getZPGX,&getZPGY,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&getAbsoluteX,&getAbsoluteX,&getAbsoluteY,&noMode, //0xB0-0xBF
-                                        &getImmediate,&getIndirectX,&noMode,&noMode,&getZPG,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsoluteAddr,&noMode, //0xC0-0xCF
-                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0xD0-0xDF
-                                        &getImmediate,&getIndirectX,&noMode,&noMode,&getZPG,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsoluteAddr,&noMode, //0xE0-0xEF
-                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode //0xF0-0xFF
-};
-
-// Instruction Lookup-table
-const void (*inst_lookup[256])() = {
-                                        &BRK,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode,&PHP,&ORA,&ASL_A,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode, // 0x00-0x0F
-                                        &BPL,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode,&CLC,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode, //0x10-0x1F
-                                        &JSR,&AND,&illegalOpcode,&illegalOpcode,&BIT,&AND,&ROL,&illegalOpcode,&PLP,&AND,&ROL_A,&illegalOpcode,&BIT,&AND,&ROL,&illegalOpcode, //0x20-0x2F
-                                        &BMI,&AND,&illegalOpcode,&illegalOpcode,&illegalOpcode,&AND,&ROL,&illegalOpcode,&SEC,&AND,&illegalOpcode,&illegalOpcode,&illegalOpcode,&AND,&ROL,&illegalOpcode, //0x30-3F
-                                        &RTI,&EOR,&illegalOpcode,&illegalOpcode,&illegalOpcode,&EOR,&LSR,&illegalOpcode,&PHA,&EOR,&LSR_A,&illegalOpcode,&JMP,&EOR,&LSR,&illegalOpcode, //0x40-0x4F
-                                        &BVC,&EOR,&illegalOpcode,&illegalOpcode,&illegalOpcode,&EOR,&LSR,&illegalOpcode,&CLI,&EOR,&illegalOpcode,&illegalOpcode,&illegalOpcode,&EOR,&LSR,&illegalOpcode,//0x50-0x5F
-                                        &RTS,&ADC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ADC,&ROR,&illegalOpcode,&PLA,&ADC,&ROR_A,&illegalOpcode,&JMP,&ADC,&ROR,&illegalOpcode, //0x60-0x6F
-                                        &BVS,&ADC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ADC,&ROR,&illegalOpcode,&SEI,&ADC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ADC,&ROR,&illegalOpcode, //0x70-0x7F
-                                        &illegalOpcode,&STA,&illegalOpcode,&illegalOpcode,&STY,&STA,&STX,&illegalOpcode,&DEY,&illegalOpcode,&TXA,&illegalOpcode,&STY,&STA,&STX,&illegalOpcode, //0x80-0x8F
-                                        &BCC,&STA,&illegalOpcode,&illegalOpcode,&STY,&STA,&STX,&illegalOpcode,&TYA,&STA,&TXS,&illegalOpcode,&illegalOpcode,&STA,&illegalOpcode,&illegalOpcode, //0x90-0x9F
-                                        &LDY,&LDA,&LDX,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode,&TAY,&LDA,&TAX,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode, //0xA0-0xAF
-                                        &BCS,&LDA,&illegalOpcode,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode,&CLV,&LDA,&TSX,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode, //0xB0-0xBF
-                                        &CPY,&CMP,&illegalOpcode,&illegalOpcode,&CPY,&CMP,&DEC,&illegalOpcode,&INY,&CMP,&DEX,&illegalOpcode,&CPY,&CMP,&DEC,&illegalOpcode,//0xC0-0xCF
-                                        &BNE,&CMP,&illegalOpcode,&illegalOpcode,&illegalOpcode,&CMP,&DEC,&illegalOpcode,&CLD,&CMP,&illegalOpcode,&illegalOpcode,&illegalOpcode,&CMP,&DEC,&illegalOpcode,//0xD0-0xDF
-                                        &CPX,&SBC,&illegalOpcode,&illegalOpcode,&CPX,&SBC,&INC,&illegalOpcode,&INX,&SBC,&NOP,&illegalOpcode,&CPX,&SBC,&INC,&illegalOpcode,//0xE0-0xEF
-                                        &BEQ,&SBC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&SBC,&INC,&illegalOpcode,&SED,&SBC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&SBC,&INC,&illegalOpcode //0xF0-0xFF
-};
-
-
-/*
-
-**********************************************
 *       6502 Instruction Functions           *
 **********************************************
 
@@ -917,7 +868,7 @@ void SBC() {
 
 // Return from Interrupt
 void RTI() {
-    byte oldStatus = P;
+    //byte oldStatus = P;
     P = read(SP);
     SP++;
 
@@ -1136,6 +1087,75 @@ void BIT() {
 /*
 
 **********************************************
+*               Lookup Tables                *
+**********************************************
+
+*/
+
+// Addressing Mode Lookup-table
+const byte (*mode_lookup[256])() = {
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsolute,&getAbsoluteAddr,&noMode, // 0x00-0x0F
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x10-0x1F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x20-0x2F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x30-0x3F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsoluteAddr,&getAbsolute,&getAbsoluteAddr,&noMode, // 0x40-0x4F
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x50-0x5F
+                                        &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getIndirectAddr,&getAbsolute,&getAbsoluteAddr,&noMode, //0x60-0x6F
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x70-0x7F
+                                        &noMode,&getIndirectXAddr,&noMode,&noMode,&getZPGAddr,&getZPGAddr,&getZPGAddr,&noMode,&noMode,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x80-0x8F
+                                        &noMode,&getIndirectYAddr,&noMode,&noMode,&getZPGXAddr,&getZPGXAddr,&getZPGYAddr,&noMode,&noMode,&getAbsoluteYAddr,&noMode,&noMode,&noMode,&getAbsoluteXAddr,&noMode,&noMode, //0x90-0x9F
+                                        &getImmediate,&getIndirectX,&getImmediate,&noMode,&getZPG,&getZPG,&getZPG,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsolute,&noMode, //0xA0-0xAF
+                                        &noMode,&getIndirectY,&noMode,&noMode,&getZPGX,&getZPGX,&getZPGY,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&getAbsoluteX,&getAbsoluteX,&getAbsoluteY,&noMode, //0xB0-0xBF
+                                        &getImmediate,&getIndirectX,&noMode,&noMode,&getZPG,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsoluteAddr,&noMode, //0xC0-0xCF
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0xD0-0xDF
+                                        &getImmediate,&getIndirectX,&noMode,&noMode,&getZPG,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&getAbsolute,&getAbsolute,&getAbsoluteAddr,&noMode, //0xE0-0xEF
+                                        &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode //0xF0-0xFF
+};
+
+// Instruction Lookup-table
+const void (*inst_lookup[256])() = {
+                                        &BRK,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode,&PHP,&ORA,&ASL_A,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode, // 0x00-0x0F
+                                        &BPL,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode,&CLC,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode, //0x10-0x1F
+                                        &JSR,&AND,&illegalOpcode,&illegalOpcode,&BIT,&AND,&ROL,&illegalOpcode,&PLP,&AND,&ROL_A,&illegalOpcode,&BIT,&AND,&ROL,&illegalOpcode, //0x20-0x2F
+                                        &BMI,&AND,&illegalOpcode,&illegalOpcode,&illegalOpcode,&AND,&ROL,&illegalOpcode,&SEC,&AND,&illegalOpcode,&illegalOpcode,&illegalOpcode,&AND,&ROL,&illegalOpcode, //0x30-3F
+                                        &RTI,&EOR,&illegalOpcode,&illegalOpcode,&illegalOpcode,&EOR,&LSR,&illegalOpcode,&PHA,&EOR,&LSR_A,&illegalOpcode,&JMP,&EOR,&LSR,&illegalOpcode, //0x40-0x4F
+                                        &BVC,&EOR,&illegalOpcode,&illegalOpcode,&illegalOpcode,&EOR,&LSR,&illegalOpcode,&CLI,&EOR,&illegalOpcode,&illegalOpcode,&illegalOpcode,&EOR,&LSR,&illegalOpcode,//0x50-0x5F
+                                        &RTS,&ADC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ADC,&ROR,&illegalOpcode,&PLA,&ADC,&ROR_A,&illegalOpcode,&JMP,&ADC,&ROR,&illegalOpcode, //0x60-0x6F
+                                        &BVS,&ADC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ADC,&ROR,&illegalOpcode,&SEI,&ADC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ADC,&ROR,&illegalOpcode, //0x70-0x7F
+                                        &illegalOpcode,&STA,&illegalOpcode,&illegalOpcode,&STY,&STA,&STX,&illegalOpcode,&DEY,&illegalOpcode,&TXA,&illegalOpcode,&STY,&STA,&STX,&illegalOpcode, //0x80-0x8F
+                                        &BCC,&STA,&illegalOpcode,&illegalOpcode,&STY,&STA,&STX,&illegalOpcode,&TYA,&STA,&TXS,&illegalOpcode,&illegalOpcode,&STA,&illegalOpcode,&illegalOpcode, //0x90-0x9F
+                                        &LDY,&LDA,&LDX,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode,&TAY,&LDA,&TAX,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode, //0xA0-0xAF
+                                        &BCS,&LDA,&illegalOpcode,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode,&CLV,&LDA,&TSX,&illegalOpcode,&LDY,&LDA,&LDX,&illegalOpcode, //0xB0-0xBF
+                                        &CPY,&CMP,&illegalOpcode,&illegalOpcode,&CPY,&CMP,&DEC,&illegalOpcode,&INY,&CMP,&DEX,&illegalOpcode,&CPY,&CMP,&DEC,&illegalOpcode,//0xC0-0xCF
+                                        &BNE,&CMP,&illegalOpcode,&illegalOpcode,&illegalOpcode,&CMP,&DEC,&illegalOpcode,&CLD,&CMP,&illegalOpcode,&illegalOpcode,&illegalOpcode,&CMP,&DEC,&illegalOpcode,//0xD0-0xDF
+                                        &CPX,&SBC,&illegalOpcode,&illegalOpcode,&CPX,&SBC,&INC,&illegalOpcode,&INX,&SBC,&NOP,&illegalOpcode,&CPX,&SBC,&INC,&illegalOpcode,//0xE0-0xEF
+                                        &BEQ,&SBC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&SBC,&INC,&illegalOpcode,&SED,&SBC,&illegalOpcode,&illegalOpcode,&illegalOpcode,&SBC,&INC,&illegalOpcode //0xF0-0xFF
+};
+
+// Cycles per Instruction Lookup Table
+const byte cycle_lookup[256] = {
+                                    7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6, //0x00-0x0F
+                                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, //0x10-0x1F
+                                    6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6, //0x20-0x2F
+                                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, //0x30-0x3F
+                                    6, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 3, 4, 6, 6, //0x40-0x4F
+                                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, //0x50-0x5F
+                                    6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 5, 4, 6, 6, //0x60-0x6F
+                                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, //0x70-0x7F
+                                    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 0, 4, 4, 4, 4, //0x80-0x8F
+                                    2, 6, 0, 0, 4, 4, 4, 4, 2, 5, 2, 0, 0, 5, 0, 0, //0x90-0x9F
+                                    2, 6, 2, 6, 3, 3, 3, 3, 2, 2, 2, 0, 4, 4, 4, 4, //0xA0-0xAF
+                                    2, 5, 0, 5, 4, 4, 4, 4, 2, 4, 2, 0, 4, 4, 4, 4, //0xB0-0xBF
+                                    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6, //0xC0-0xCF
+                                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, //0xD0-0xDF
+                                    2, 6, 2, 8, 3, 3, 5, 5, 2, 2, 2, 2, 4, 4, 6, 6, //0xE0-0xEF
+                                    2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7  //0xF0-0xFF
+};
+
+
+/*
+
+**********************************************
 *       CPU Functions                        *
 **********************************************
 
@@ -1150,6 +1170,7 @@ void CPU_RESET() {
     P = 0;
     PC = read(0xFFFD)  << 8 | read(0xFFFC); // Set PC to Reset Vector
     SP = 0xFF;
+    printf("PC on RESET: HEX: %x DEC: %d \n",PC,PC);
 }
 
 
@@ -1157,12 +1178,22 @@ void CPU_RESET() {
 void CPU_RUN() {
     
     opcode = read(PC);
+    printf("OPCODE: %x\n",opcode);
 
     // Checking which addressing mode the instruction will be using
     (*mode_lookup[opcode])(); 
 
-    // Checking which instruction corresponds to the opcode, then executing thath instruction
+    // Checking which instruction corresponds to the opcode, then executing that instruction
     (*inst_lookup[opcode])();
     
+}
+
+void CPU_STATUS() {
+    printf("A:\t%X\n",A);
+    printf("X:\t%X\n",X);
+    printf("Y:\t%X\n",Y);
+    printf("SP:\t%X\n",SP);
+    printf("PC:\t%X\n",PC);
+    bin(P,8);
 }
 
