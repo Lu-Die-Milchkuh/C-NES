@@ -4,6 +4,7 @@
 #include "Bus.h"
 #include "6502.h"
 #include "PPU.h"
+#include "Mapper.h"
 
 // Write Data to the Bus aka System,PPU Memory
 void write(byte data,word address) {
@@ -19,12 +20,13 @@ void write(byte data,word address) {
         memory[(address & 0x07FF)] = data;
     }
 
-    /*WRITING TO PPU RAM
-    */
+    // Write to PPU
     else if(address >= 0x2000 && address <= 0x3FFF)
     {
-        ppu_memory[(address & 0x0007)] = data;
+        PPU_CPU_WRITE(data,(address & 0x0007));
     }
+
+
 }
 
 
@@ -39,10 +41,22 @@ byte read(word address) {
         */
         data = memory[(address & 0x07FF)];
     }
-    // Read from PPU Memory
+
+    // Read from PPU 
     else if(address >= 0x2000 && address <= 0x3FFF)
     {
-        data = ppu_memory[(address & 0x0007)];
+        data = PPU_CPU_READ((address & 0x0007));
+    }
+    // Read from APU
+    else if(address == 0x4015)
+    {
+
+    }
+
+    // Reading from Cartridge
+    else if(address >= 0x8000 && address <= 0xFFFF)
+    {
+        data = MAPPER_000_CPU_READ(address); // Only Mapper 00 for now
     }
     return data;
 }
