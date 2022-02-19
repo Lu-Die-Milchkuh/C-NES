@@ -1,5 +1,6 @@
-typedef unsigned char byte;
-typedef unsigned short word;
+#ifndef _TYPES
+#include "Types.h"
+#endif
 
 // Pointer containing content of ROM
 extern byte* cartridge_pgr_memory;

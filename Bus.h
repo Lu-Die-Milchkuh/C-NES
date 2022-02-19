@@ -1,5 +1,6 @@
-typedef unsigned char byte;
-typedef unsigned short word;
+#ifndef _TYPES
+#include "Types.h"
+#endif
 
 
 // Write Data to Address in memory, CPU Bus

@@ -1,6 +1,6 @@
-
-typedef unsigned char byte;     // 8-Bit 
-typedef unsigned short word;    // 16-Bit
+#ifndef _TYPES
+#include "Types.h"
+#endif
 
 /*
     Registers
