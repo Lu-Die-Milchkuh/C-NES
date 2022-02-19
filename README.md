@@ -1,2 +1,2 @@
-# C-NES
-A NES-Emulator written in C (WIP)
+# Nessi
+Nessi (Nes-C), a NES-Emulator written in C (WIP)
