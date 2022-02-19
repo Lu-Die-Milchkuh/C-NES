@@ -77,9 +77,9 @@ byte getAbsolute() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = read(PC);
-    PC++;
     lowByte = read(PC);
+    PC++;
+    highByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
@@ -95,9 +95,9 @@ byte getAbsoluteX() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = read(PC);
-    PC++;
     lowByte = read(PC);
+    PC++;
+    highByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
@@ -113,9 +113,9 @@ byte getAbsoluteY() {
     byte highByte,lowByte;
 
     PC++;
-    highByte = read(PC);
-    PC++;
     lowByte = read(PC);
+    PC++;
+    highByte = read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
@@ -1178,7 +1178,7 @@ void CPU_RESET() {
 void CPU_RUN() {
     
     opcode = read(PC);
-    printf("OPCODE: %x\n",opcode);
+    
 
     // Checking which addressing mode the instruction will be using
     (*mode_lookup[opcode])(); 
@@ -1189,6 +1189,7 @@ void CPU_RUN() {
 }
 
 void CPU_STATUS() {
+    printf("OPCODE: %x\n",opcode);
     printf("A:\t%X\n",A);
     printf("X:\t%X\n",X);
     printf("Y:\t%X\n",Y);
