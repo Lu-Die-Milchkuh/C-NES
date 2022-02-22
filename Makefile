@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -O2 -lSDL2
 FILES = 6502.c Bus.c HelperFunc.c PPU.c Mapper.c Cartridge.c
-OUT_FILE = CNES
+OUT_FILE = Nessi.elf
 
 default: dir compile 
 
