@@ -15,7 +15,7 @@ byte X = 0;
 byte Y = 0;
 word PC = 0;
 byte SP = 0;
-byte P = 0;
+STATUS SR;
 byte memory[2048] = {0};
 
 // Var to store temporary data or address
@@ -362,15 +362,9 @@ void illegalOpcode() {
 void AND() {
     A &= temp_data;
 
-    if(A == 0) 
-    {   // Set Zero Flag
-        setBit(&P,1);
-    }
+    SR.Z = (A==0); // Set Zero Flag
+    SR.N = (A >> 7); // Set Negative Flag;
     
-    // Set Negative Flag 
-    // to 7th Bit of A
-    clearBit(&P,7);
-    P |= getBit(&A,7);
     PC++;
 }
 
@@ -378,30 +372,19 @@ void AND() {
 void EOR() {
     A ^= temp_data;
 
-    if(A == 0) 
-    {   // Set Zero Flag
-        setBit(&P,1);
-    }
-    
-    // Set Negative Flag 
-    // to 7th Bit of A
-    clearBit(&P,7);
-    P |= getBit(&A,7);
+    SR.Z = (A==0); // Set Zero Flag
+    SR.N = (A >> 7); // Set Negative Flag;
+
     PC++;
 }
 
 // Bitwise OR with Accumulator
 void ORA() {
     A |= temp_data;
-    if(A == 0) 
-    {   // Set Zero Flag
-        setBit(&P,1);
-    }
-    
-    // Set Negative Flag 
-    // to 7th Bit of A
-    clearBit(&P,7);
-    P |= getBit(&A,7);
+
+    SR.Z = (A==0); // Set Zero Flag
+    SR.N = (A >> 7); // Set Negative Flag;
+
     PC++;
 }
 
@@ -414,49 +397,49 @@ void NOP() {
 
 // Set Decimal Flag
 void SED() {
-    setBit(&P,3);
+    SR.D = 1;
     PC++;
 }
 
 
 // Set Interrupt Flag
 void SEI() {
-    setBit(&P,2);
+    SR.I = 1;
     PC++;
 }
 
 
 // Set Carry Flag
 void SEC() {
-    setBit(&P,0);
+    SR.C = 1;
     PC++;
 }
 
 
 // Clear Carry Flag
 void CLC() {
-    clearBit(&P,0);
+    SR.C = 0;
     PC++;
 }
 
 
 // Clear Decimal Bit
 void CLD() {
-    clearBit(&P,3);
+    SR.D = 0;
     PC++;
 }
 
 
 // Clear Interrupt Flag
 void CLI() {
-    clearBit(&P,2);
+    SR.I = 0;
     PC++;
 }
 
 
 // Clear Overflow Flag
 void CLV() {
-    clearBit(&P,6);
+    SR.V = 0;
     PC++;
 }
 
@@ -472,16 +455,10 @@ void PHA() {
 // Pull A from Stack
 void PLA() {
     A = read(SP);
+
+    SR.Z = (A==0);
+    SR.N = (A>>7);
     
-    if(A == 0) 
-    {   // Set Zero Flag
-        setBit(&P,1);
-    }
-    
-    // Set Negative Flag 
-    // to 7th Bit of A
-    clearBit(&P,7);
-    P |= getBit(&A,7);
     SP++;
     PC++;
     
@@ -489,14 +466,14 @@ void PLA() {
 
 // Push Status Register on Stack
 void PHP() {
-    write(P,SP);
+    write(SR.reg,SP);
     SP--;
     PC++;
 }
 
 // Pull Status Register from Stack
 void PLP() {
-    P = read(SP);
+    SR.reg = read(SP);
     SP++;
     PC++;
 }
@@ -506,13 +483,9 @@ void PLP() {
 void INX() {
     X++;
 
-    if(X == 0) 
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (X==0);
+    SR.N = (X>>7);
 
-    clearBit(&P,7);
-    P |= getBit(&X,7);
     PC++;
 }
 
@@ -520,13 +493,9 @@ void INX() {
 void INY() {
     Y++;
 
-    if(Y == 0) 
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (Y==0);
+    SR.N = (Y>>7);
 
-    clearBit(&P,7);
-    P |= getBit(&Y,7);
     PC++;
 }
 
@@ -536,13 +505,9 @@ void INC() {
     foo++;
     write(foo,temp_address);
 
-    if(read(temp_address) == 0) 
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (foo==0);
+    SR.N = (foo>>7);
 
-    clearBit(&P,7);
-    P |= getBit(&foo,7);
     PC++;
 }
 
@@ -551,13 +516,11 @@ void DEC() {
     byte data = read(temp_address);
     data = data - 1;
 
-    if(data == 0)
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (data==0);
+    SR.N = (data>>7);
+
     write(data,temp_address);
-    clearBit(&P,7);
-    P |= getBit(&data,7);
+    
     PC++;
 }
 
@@ -565,105 +528,79 @@ void DEC() {
 void DEX() {
     X--;
 
-    if(X == 0) 
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (X==0);
+    SR.N = (X>>7);
 
-    clearBit(&P,7);
-    P |= getBit(&X,7);
     PC++;
 }
 
 // Decrement Y by 1
 void DEY() {
     Y--;
-    
-    if(Y == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&Y,7);
+    SR.Z = (Y==0);
+    SR.N = (Y>>7);
+    
     PC++;
 }
 
 // Transfer A to X
 void TAX(){
     X = A;
-    if(X == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&X,7);
+    SR.Z = (X==0);
+    SR.N = (X>>7);
+
     PC++;
 }
 
 // Transfer A to Y
 void TAY(){
     Y = A;
-    if(Y == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&Y,7);
+    SR.Z = (Y==0);
+    SR.N = (Y>>7);
+
     PC++;
 }
 
 // Transfer Stackpointer to X
 void TSX(){
     X = SP;
-    if(X == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&X,7);
+    SR.Z = (X==0);
+    SR.N = (X>>7);
+
     PC++;
 }
 
 // Transfer X to A
 void TXA(){
     A = X;
-    if(A == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&A,7);
+    SR.Z = (A==0);
+    SR.N = (A>>7);
+
     PC++;
 }
 
 // Transfer Y to A
 void TYA(){
     A = Y;
-    if(A == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&A,7);
+    SR.Z = (A==0);
+    SR.N = (A>>7);
+   
     PC++;
 }
 
 // Transfer X to Stackpointer
 void TXS(){
     SP = X;
-    if(SP == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&SP,7);
+    SR.Z = (SP==0);
+    SR.N = (SP>>7);
+
     PC++;
 }
 
@@ -736,17 +673,13 @@ void ASL() {
     byte data = read(temp_address);
     byte oldCarry = getBit(&data,7) >> 7;
 
-    P |= oldCarry;
+    SR.C = oldCarry;
     data = data << 1;
     clearBit(&data,0);
 
-    if(data == 0)
-    {
-        setBit(&P,1);
-    }
-
-    clearBit(&P,7);
-    P |= getBit(&data,7);
+    SR.Z = (data==0);
+    SR.N = (data>>7);
+   
     // Writing new Value back to memory location
     write(data,temp_address);
     PC++;
@@ -755,17 +688,13 @@ void ASL() {
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
 void ASL_A(){
     byte oldCarry = getBit(&A,7) >> 7;
-    P |= oldCarry;
+    SR.C = oldCarry;
     A = A << 1;
     clearBit(&A,0);
 
-    if(A == 0)
-    {
-        setBit(&P,1);
-    }
-
-    clearBit(&P,7);
-    P |= getBit(&A,7);
+    SR.Z = (A==0);
+    SR.N = (A>>7);
+    
     PC++;
 }
 
@@ -773,37 +702,30 @@ void ASL_A(){
 // Load A with data
 void LDA() {
     A = temp_data;
-    if(A == 0) 
-    {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&A,7);
+    SR.Z = (A==0);
+    SR.N = (A>>7);
+
     PC++;
 }
 
 // Load X with data
 void LDX() {
     X = temp_data;
-    if(X == 0) {
-        setBit(&P,1);
-    }
 
-    clearBit(&P,7);
-    P |= getBit(&X,7);
+    SR.Z = (X==0);
+    SR.N = (X>>7);
+   
     PC++;
 }
 
 // Load Y with data
 void LDY() {
     Y = temp_data;
-    if(Y == 0) {
-        setBit(&P,1);
-    }
-    
-    clearBit(&P,7);
-    P |= getBit(&Y,7);
+
+    SR.Z = (Y==0);
+    SR.N = (Y>>7);
+
     PC++;
 }
 
@@ -826,19 +748,10 @@ void ADC() {
     word temp = A + temp_data; // Temp Variable to check for Overflow
     A = A + temp_data;
 
-    if(temp > 255) // Value > 255 means overflow
-    {
-        setBit(&P,6);
-    }
+    SR.V = (temp > 255); // Value > 255 means overflow
+    SR.Z = (A==0);
+    SR.N = (A>>7);
 
-    if(A == 0) 
-    {
-       setBit(&P,1); 
-    }
-
-    // Load Sign Bit into Status Register
-    clearBit(&P,7);
-    P |= getBit(&Y,7);
     PC++;
 }
 
@@ -846,22 +759,15 @@ void ADC() {
 // NEED CHECKING FOR CARRY/Borrow
 // Substract memory from A
 void SBC() {
-    // Checking for Underflow, ex. if A = 0, and we substract 1 from A -> A = 255
-    if(A < (A - temp_data)) 
-    {
-        setBit(&P,6);
-    }
+    
     // Substracting data from Accumulator
     A = A - temp_data;
 
-    if(A == 0) 
-    {
-       setBit(&P,1); 
-    }
-
-    // Load Sign Bit into Status Register
-    clearBit(&P,7);
-    P |= getBit(&Y,7);
+    // Checking for Underflow, ex. if A = 0, and we substract 1 from A -> A = 255
+    SR.V = ((A - temp_data) > A);
+    SR.Z = (A==0);
+    SR.N = (A>>7);
+   
     PC++;
 }
 
@@ -869,7 +775,7 @@ void SBC() {
 // Return from Interrupt
 void RTI() {
     //byte oldStatus = P;
-    P = read(SP);
+    SR.reg = read(SP);
     SP++;
 
     PC = read(SP);
@@ -888,8 +794,8 @@ void BRK() {
     write((PC+2),SP); // Push return address to Stack
     SP--;
     // Set Break Bit
-    setBit(&P,5);
-    write(P,SP); // Push Status Register to Stack
+    SR.B = 1;
+    write(SR.reg,SP); // Push Status Register to Stack
     SP--;
     PC++; // NOT SURE
 
@@ -898,7 +804,7 @@ void BRK() {
 // Branch if Overflow Bit is 0
 void BVC() {
     // Skip n-bytes if overflow is cleared
-    if(getBit(&P,6) == 0x00) 
+    if(SR.V == 0) 
     {   
         PC++;
         byte foo = read(PC);
@@ -912,7 +818,7 @@ void BVC() {
 // Branch if Overflow Bit is 1
 void BVS() {
     // Skip n-bytes if overflow is set
-    if(getBit(&P,6) == 0x40) 
+    if(SR.V) 
     {   
         PC++;
         byte foo = read(PC);
@@ -925,7 +831,8 @@ void BVS() {
 
 // Branch if Result was zero
 void BEQ() {
-  if(getBit(&P,1) == 0x2) 
+    // Skip n-bytes if zero is set
+    if(SR.Z) 
     {   
         PC++;
         byte foo = read(PC);
@@ -938,7 +845,7 @@ void BEQ() {
 
 // Branch if Result was NOT zero 
 void BNE() {
-    if(getBit(&P,1) == 0x00) 
+    if(SR.Z == 0x00) 
     {   
         PC++;
         byte foo = read(PC);
@@ -951,7 +858,7 @@ void BNE() {
 
 // Branch if Result was positive
 void BPL() {
-    if(getBit(&P,7) == 0x00) 
+    if(SR.N == 0x00) 
     {   
         PC++;
         byte foo = read(PC);
@@ -964,7 +871,7 @@ void BPL() {
 
 // Branch if Result was negative
 void BMI() {
-    if(getBit(&P,7) == 0x80) 
+    if(SR.N) 
     {   
         PC++;
         byte foo = read(PC);
@@ -977,7 +884,7 @@ void BMI() {
 
 // Branch if Carry is 0
 void BCC() {
-    if(getBit(&P,0) == 0x00) 
+    if(SR.C == 0) 
     {   
         PC++;
         byte foo = read(PC);
@@ -990,7 +897,7 @@ void BCC() {
 
 // Branch if carry is 1
 void BCS() {
-    if(getBit(&P,0) == 0x01) 
+    if(SR.C) 
     {   
         PC++;
         byte foo = read(PC);
@@ -1006,19 +913,11 @@ void CMP() {
     byte result = A - temp_data;
 
     // Set zero Bit if Result is 0 (A and data same value)
-    if(A == temp_data)
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (A == temp_data);
+    // Set Carry
+    SR.C = (A >= temp_data);
+    SR.N = (result >> 7);
 
-    if(A >= temp_data) 
-    {
-        setBit(&P,0); // Set Carry
-    }
-
-    // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
-    clearBit(&P,7);
-    P |= getBit(&result,7);
     PC++;
 }
 
@@ -1028,19 +927,11 @@ void CPX() {
     byte result = X - temp_data;
 
     // Set zero Bit if Result is 0 (X and data same value)
-    if(X == temp_data)
-    {
-        setBit(&P,1);
-    }
+    SR.Z = (X == temp_data);
+    // Set Carry
+    SR.C = (X >= temp_data);
+    SR.N = (result >> 7);
 
-    if(X >= temp_data) 
-    {
-        setBit(&P,0); // Set Carry
-    }
-
-    // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
-    clearBit(&P,7);
-    P |= getBit(&result,7);
     PC++;
 }
 
@@ -1048,20 +939,12 @@ void CPX() {
 void CPY() {
     byte result = Y - temp_data;
 
-    // Set zero Bit if Result is 0 (Y and data same value)
-    if(Y == temp_data)
-    {
-        setBit(&P,1);
-    }
+    // Set zero Bit if Result is 0 (X and data same value)
+    SR.Z = (Y == temp_data);
+    // Set Carry
+    SR.C = (Y >= temp_data);
+    SR.N = (result >> 7);
 
-    if(Y >= temp_data) 
-    {
-        setBit(&P,0); // Set Carry
-    }
-
-    // If Bit 7 of Result is 1, Bit 7 of P will be 1 too
-    clearBit(&P,7);
-    P |= getBit(&result,7);
     PC++;
 }
 
@@ -1070,16 +953,11 @@ void BIT() {
     byte data = read(temp_address);
     byte result = A & data;
 
-    if(result == 0)
-    {
-        setBit(&P,1);
-    }
-
-    // Copy Bit 7 and 6 of the value to
-    clearBit(&P,7);
-    clearBit(&P,6);
-    P |= getBit(&data,7);
-    P |= getBit(&data,6);
+    SR.Z = (result==0);
+    // Copy Bit 7 and 6 of the value 
+    SR.N = (data >> 7);
+    SR.V = (data >> 6);
+   
     PC++;
 }
 
@@ -1167,7 +1045,7 @@ void CPU_RESET() {
     A = 0;
     X = 0;
     Y = 0;
-    P = 0;
+    SR.reg = 0;
     PC = read(0xFFFD)  << 8 | read(0xFFFC); // Set PC to Reset Vector
     SP = 0xFF;
     printf("PC on RESET: HEX: %x DEC: %d \n",PC,PC);
@@ -1179,7 +1057,6 @@ void CPU_RUN() {
     
     opcode = read(PC);
     
-
     // Checking which addressing mode the instruction will be using
     (*mode_lookup[opcode])(); 
 
@@ -1195,6 +1072,6 @@ void CPU_STATUS() {
     printf("Y:\t%X\n",Y);
     printf("SP:\t%X\n",SP);
     printf("PC:\t%X\n",PC);
-    bin(P,8);
+
 }
 

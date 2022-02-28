@@ -15,6 +15,23 @@ extern byte SP;
 //Programm Counter
 extern word PC;
 
+typedef union 
+    {
+        struct 
+        {
+            byte N:1;
+            byte V:1;
+            byte unused:1;
+            byte B:1;
+            byte D:1;
+            byte I:1;
+            byte Z:1;
+            byte C:1;
+        };
+
+        byte reg;
+} STATUS;
+
 /*  
     Status Register(bit 7 to bit 0)
 
@@ -27,7 +44,8 @@ extern word PC;
     Z	Zero
     C	Carry
 */
-extern byte P;
+
+extern STATUS SR; // Status Register
 
 /*
     Memory
