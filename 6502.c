@@ -738,7 +738,6 @@ void JMP() {
 void JSR() {
     write((PC+2),SP); // Push return address to Stack
     SP--;
-    //word address = getAbsoluteAddr();
     PC = read(temp_address);
 
 }
@@ -956,7 +955,7 @@ void BIT() {
     SR.Z = (result==0);
     // Copy Bit 7 and 6 of the value 
     SR.N = (data >> 7);
-    SR.V = (data >> 6);
+    SR.V = ((data & (1<<6)) >> 7);
    
     PC++;
 }
