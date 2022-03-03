@@ -10,31 +10,12 @@
 #include "Mapper.h"
 
 
-// Pointer to store content of ROM
-//byte* cartridge__memory = NULL;
-
-// Pointer to Store Character Memory of ROM
-//byte* cartridge_chr_memory = NULL;
-
 ROM_HEADER header;
 
 
-void PRINT_HEADER() {
-    printf("NAME: %s\n",header.name);
-    printf("PRG CHUNKS: %d\n",header.prg_rom_chunks);
-    printf("CHR CHUNKS: %d\n",header.chr_rom_chunks);
-    printf("MAP1: %d\n",header.mapper1);
-    printf("MAP2: %d\n",header.mapper2);
-    printf("PRG RAM: %d\n",header.prg_ram_size);
-    printf("TV1: %d\n",header.tv_system1);
-    printf("TV2: %d\n",header.tv_system2);
-     printf("MAPPER_ID: %d\n",MAPPER_ID);
-    printf("____________________\n");
-}
-
 void loadROM(char* path) {
     FILE* file = fopen(path,"rb");
-    byte file_type = 1;
+    byte file_type = 1; // INES Format
     size_t chr_size = 0;
     size_t prg_size = 0;
 
@@ -58,9 +39,10 @@ void loadROM(char* path) {
     MAPPER_ID = ((header.mapper2 >> 4) << 4) | (header.mapper1 >> 4);
     MIRROR = (header.mapper1 & 0x01) ? HORIZONTAL : VERTICAL;
     
-
+    //Check if NES 2.0 File
     if((header.mapper2 & 0x0C) == 0x08)
-    {
+    {   
+        // NES 2.0 Format
         file_type = 2;
     }
 
@@ -108,19 +90,7 @@ void loadROM(char* path) {
         fread(chr_rom,chr_size,1,file);
 
     }
-    /*
-    PRINT_HEADER();
-
-    printf("\nPRG_ROM\n");
-    for(int i = 0;i < prg_size;i++) {
-        printf("Address: %x\tData: %x\n",i,prg_rom[i]);
-    }
-    printf("\nCHR_ROM\n");
-    for(int i = 0;i < chr_size;i++) {
-        printf("Address: %x\tData: %x\n",i,chr_rom[i]);
-    }
-    */
-
+    
     fclose(file);
 }
 
