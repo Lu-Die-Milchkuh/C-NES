@@ -9,15 +9,15 @@
 #include "Mapper.h"
 #include "Cartridge.h"
 
-byte MAPPER_ID = 0;
+u8 MAPPER_ID = 0;
 
-byte PRG_BANKS = 0;
-byte CHR_BANKS = 0;
+u8 PRG_BANKS = 0;
+u8 CHR_BANKS = 0;
 
-byte* chr_rom = NULL;
-byte* prg_rom = NULL;
+u8* chr_rom = NULL;
+u8* prg_rom = NULL;
 
-byte MIRROR = HORIZONTAL;
+u8 MIRROR = HORIZONTAL;
 
 
 
@@ -30,9 +30,9 @@ void MAPPER_INIT(FILE* file) {
 
 
 
-byte MAPPER_000_CPU_READ(word address) {
-    byte data = 0;
-    word mapped_addr = 0;
+u8 MAPPER_000_CPU_READ(u16 address) {
+    u8 data = 0;
+    u16 mapped_addr = 0;
     if(address >= 0x8000 && address <= 0xFFFF)
     {
         mapped_addr = address & (PRG_BANKS > 1 ? 0x7FFF : 0x3FFF);
@@ -43,8 +43,8 @@ byte MAPPER_000_CPU_READ(word address) {
 }
 
 
-byte MAPPER_000_PPU_READ(word address) {
-    byte data = 0;
+u8 MAPPER_000_PPU_READ(u16 address) {
+    u8 data = 0;
 
     if(address >= 0x0000 && address <= 0x1FFF)
     {

@@ -15,7 +15,7 @@ ROM_HEADER header;
 
 void loadROM(char* path) {
     FILE* file = fopen(path,"rb");
-    byte file_type = 1; // INES Format
+    u8 file_type = 1; // INES Format
     size_t chr_size = 0;
     size_t prg_size = 0;
 
@@ -31,7 +31,7 @@ void loadROM(char* path) {
     // Is a trainer present?
     if(header.mapper1 & 0x04)
     {
-        // Skip 512 bytes
+        // Skip 512 bytess
         fseek(file,512,SEEK_SET);
     }
 
@@ -52,7 +52,7 @@ void loadROM(char* path) {
         PRG_BANKS = header.prg_rom_chunks;
         CHR_BANKS = header.chr_rom_chunks;
 
-        prg_size = (sizeof(byte) * PRG_BANKS * 16384);
+        prg_size = (sizeof(u8) * PRG_BANKS * 16384);
          
 
         prg_rom = malloc(prg_size);
@@ -60,13 +60,13 @@ void loadROM(char* path) {
 
         if(header.chr_rom_chunks == 0) 
         {   
-            chr_size = (sizeof(byte) * 8192);
+            chr_size = (sizeof(u8) * 8192);
             chr_rom = malloc(chr_size);
         }
 
         else
         {   
-            chr_size = (sizeof(byte) * 8192 * header.chr_rom_chunks);
+            chr_size = (sizeof(u8) * 8192 * header.chr_rom_chunks);
             chr_rom = malloc(chr_size);
         }
 
@@ -78,8 +78,8 @@ void loadROM(char* path) {
         PRG_BANKS = ((header.prg_ram_size & 0x07) << 8) | header.prg_rom_chunks;
         CHR_BANKS = ((header.prg_ram_size & 0x38) << 8) | header.chr_rom_chunks;
 
-        prg_size = (sizeof(byte) * PRG_BANKS * 16384);
-        chr_size =(sizeof(byte) * CHR_BANKS * 8192);
+        prg_size = (sizeof(u8) * PRG_BANKS * 16384);
+        chr_size =(sizeof(u8) * CHR_BANKS * 8192);
 
         prg_rom = malloc(prg_size);
 

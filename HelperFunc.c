@@ -5,18 +5,18 @@
 
 
 
-void setBit(byte* reg,byte index) {
+void setBit(u8* reg,u8 index) {
     *reg |= (1<<index);
 }
 
 
-void clearBit(byte* reg,byte index) {
+void clearBit(u8* reg,u8 index) {
     *reg &= ~(1<<index);
 }
 
 
-byte getBit(byte* reg,byte index) {
-    byte foo = 0;
+u8 getBit(u8* reg,u8 index) {
+    u8 foo = 0;
     foo = (*reg & (1<<index));
     return foo;
 }

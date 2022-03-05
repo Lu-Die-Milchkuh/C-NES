@@ -4,19 +4,19 @@
 
 
 
-extern byte* chr_rom ;
-extern byte* prg_rom ;
+extern u8* chr_rom ;
+extern u8* prg_rom ;
 
 
 // Read from Cartridge
-byte MAPPER_000_CPU_READ(word address);
-byte MAPPER_000_PPU_READ(word address);
+u8 MAPPER_000_CPU_READ(u16 address);
+u8 MAPPER_000_PPU_READ(u16 address);
 
 
 #define VERTICAL 1
 #define HORIZONTAL 0
 
-extern byte MIRROR;
-extern byte MAPPER_ID;
-extern byte PRG_BANKS;
-extern byte CHR_BANKS;
+extern u8 MIRROR;
+extern u8 MAPPER_ID;
+extern u8 PRG_BANKS;
+extern u8 CHR_BANKS;

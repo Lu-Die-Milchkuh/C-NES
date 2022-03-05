@@ -3,8 +3,8 @@
 #endif
 
 // Pointer containing content of ROM
-extern byte* cartridge_pgr_memory;
-extern byte* cartridge_chr_memory;
+extern u8* cartridge_pgr_memory;
+extern u8* cartridge_chr_memory;
 
 /*
 The format of the header is as follows:
@@ -22,13 +22,13 @@ The format of the header is as follows:
 
 typedef struct {
                 char name[4];
-		        byte prg_rom_chunks;
-		        byte chr_rom_chunks;
-		        byte mapper1;
-		        byte mapper2;
-		        byte prg_ram_size;
-		        byte tv_system1;
-		        byte tv_system2;
+		        u8 prg_rom_chunks;
+		        u8 chr_rom_chunks;
+		        u8 mapper1;
+		        u8 mapper2;
+		        u8 prg_ram_size;
+		        u8 tv_system1;
+		        u8 tv_system2;
 		        char unused[5];
 } ROM_HEADER;
 

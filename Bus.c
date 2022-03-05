@@ -7,7 +7,7 @@
 #include "Mapper.h"
 
 // Write Data to the Bus aka System,PPU Memory
-void write(byte data,word address) {
+void write(u8 data,u16 address) {
     /* WRITING TO SYSTEM RAM!
        System RAM Address Space is 8 KB big, even tho only 2 KB is available!
        The other 6 KB are mirrors of the first 2 KB!
@@ -30,8 +30,8 @@ void write(byte data,word address) {
 }
 
 
-byte read(word address) {
-    byte data = 0;  // variable to store data
+u8 read(u16 address) {
+    u8 data = 0;  // variable to store data
 
     // Read data from system memory
     if(address >= 0x0000 && address <= 0x1FFF) 

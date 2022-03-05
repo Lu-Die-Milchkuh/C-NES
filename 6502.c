@@ -10,21 +10,21 @@
 #include "HelperFunc.h"
 #include "Bus.h"
 
-byte A = 0;
-byte X = 0;
-byte Y = 0;
-word PC = 0;
-byte SP = 0;
+u8 A = 0;
+u8 X = 0;
+u8 Y = 0;
+u16 PC = 0;
+u8 SP = 0;
 STATUS SR;
-byte memory[2048] = {0};
+u8 memory[2048] = {0};
 
 // Var to store temporary data or address
-byte temp_data = 0;
-word temp_address = 0;
+u8 temp_data = 0;
+u16 temp_address = 0;
 
 
-// opcode -> byte that identifies the instruction
-byte opcode = 0;
+// opcode -> u8 that identifies the instruction
+u8 opcode = 0;
 
 /*
 
@@ -35,15 +35,15 @@ byte opcode = 0;
 */
 
 // Return next Byte, Immediate Addressing Mode
-byte getImmediate() {
+u8 getImmediate() {
     PC++;
     temp_data = read(PC);   
     return 0;
 }
 
 // Return Data from Zero Page, only capable of addressing first 256 Bytes of Memory
-byte getZPG() {
-    byte zpg_addr = 0;  // Zero Page Address
+u8 getZPG() {
+    u8 zpg_addr = 0;  // Zero Page Address
     PC++;
     zpg_addr = read(PC);
     temp_data = read(zpg_addr);
@@ -53,8 +53,8 @@ byte getZPG() {
 
 
 // Return Data from Zero Page + X(offset)
-byte getZPGX() {
-    byte zpg_addr = 0;  // Zero Page Addrsss
+u8 getZPGX() {
+    u8 zpg_addr = 0;  // Zero Page Addrsss
     PC++;
     zpg_addr = read(PC) + X;  // Adding Offset
     temp_data = read(zpg_addr);
@@ -62,8 +62,8 @@ byte getZPGX() {
 }
 
 // Return Data from Zero Page + Y(offset)
-byte getZPGY() {
-    byte zpg_addr = 0;  // Zero Page Addrsss
+u8 getZPGY() {
+    u8 zpg_addr = 0;  // Zero Page Addrsss
     PC++;
     zpg_addr = read(PC) + Y;  // Adding Offset
     temp_data = read(zpg_addr);
@@ -72,9 +72,9 @@ byte getZPGY() {
 
 
 // Return Data stored @ Address in Memory, Absolute Addressing Mode
-byte getAbsolute() {
-    word address = 0;
-    byte highByte,lowByte;
+u8 getAbsolute() {
+    u16 address = 0;
+    u8 highByte,lowByte;
 
     PC++;
     lowByte = read(PC);
@@ -90,9 +90,9 @@ byte getAbsolute() {
 
 
 // Return Data stored @ Address + X in Memory, Absolute X-Indexed Addressing Mode
-byte getAbsoluteX() {
-    word address = 0;
-    byte highByte,lowByte;
+u8 getAbsoluteX() {
+    u16 address = 0;
+    u8 highByte,lowByte;
 
     PC++;
     lowByte = read(PC);
@@ -108,9 +108,9 @@ byte getAbsoluteX() {
 
 
 // Return Data stored @ Address + Y in Memory, Absolute Y-Indexed Addressing Mode
-byte getAbsoluteY() {
-    word address = 0;
-    byte highByte,lowByte;
+u8 getAbsoluteY() {
+    u16 address = 0;
+    u8 highByte,lowByte;
 
     PC++;
     lowByte = read(PC);
@@ -131,11 +131,11 @@ byte getAbsoluteY() {
 */
 
 // Indirect Addressing Mode, given Address is used to calculate the real address where data is stored
-byte getIndirect() {
-    byte tmp_addr1 = 0; // HighByte
-    byte tmp_addr2 = 0; //LowByte
-    word tmp_addr = 0;  //Placeholder Address
-    word real_addr = 0;
+u8 getIndirect() {
+    u8 tmp_addr1 = 0; // HighByte
+    u8 tmp_addr2 = 0; //LowByte
+    u16 tmp_addr = 0;  //Placeholder Address
+    u16 real_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC);
@@ -153,11 +153,11 @@ byte getIndirect() {
 }
 
 // Indirect Addressing Mode + Offset X
-byte getIndirectX() {
-    byte tmp_addr1 = 0;
-    byte tmp_addr2 = 0;
-    word tmp_addr = 0;
-    word real_addr = 0;
+u8 getIndirectX() {
+    u8 tmp_addr1 = 0;
+    u8 tmp_addr2 = 0;
+    u16 tmp_addr = 0;
+    u16 real_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC) + X;
@@ -174,11 +174,11 @@ byte getIndirectX() {
 }
 
 // Indirect Addressing Mode + Offset Y
-byte getIndirectY() {
-    byte tmp_addr1 = 0;
-    byte tmp_addr2 = 0;
-    word tmp_addr = 0;
-    word real_addr = 0;
+u8 getIndirectY() {
+    u8 tmp_addr1 = 0;
+    u8 tmp_addr2 = 0;
+    u16 tmp_addr = 0;
+    u16 real_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC);
@@ -195,7 +195,7 @@ byte getIndirectY() {
 }
 
 // Some instrctions are implied . which means all the needed infromations are already present
-byte noMode() {
+u8 noMode() {
     return 0;
 }
 
@@ -209,8 +209,8 @@ byte noMode() {
 */
 
 // Returns absolute Address
-byte getAbsoluteAddr() {
-    byte highByte,lowByte;
+u8 getAbsoluteAddr() {
+    u8 highByte,lowByte;
 
     PC++;
     lowByte = read(PC); 
@@ -224,8 +224,8 @@ byte getAbsoluteAddr() {
 }
 
 // Returns absolute, X-indexed Address
-byte getAbsoluteXAddr() {
-    byte highByte,lowByte;
+u8 getAbsoluteXAddr() {
+    u8 highByte,lowByte;
 
     PC++;
     lowByte = read(PC);
@@ -241,8 +241,8 @@ byte getAbsoluteXAddr() {
 
 
 // Returns absolute, Y-indexed Address
-byte getAbsoluteYAddr() {
-    byte highByte,lowByte;
+u8 getAbsoluteYAddr() {
+    u8 highByte,lowByte;
 
     PC++;
     lowByte = read(PC);
@@ -258,7 +258,7 @@ byte getAbsoluteYAddr() {
 
 
 // Returns zeropage address
-byte getZPGAddr() {
+u8 getZPGAddr() {
     PC++;
     temp_address = read(PC);
     
@@ -267,7 +267,7 @@ byte getZPGAddr() {
 }
 
 // Returns zeropage, X-indexed Address
-byte getZPGXAddr() {
+u8 getZPGXAddr() {
     PC++;
     temp_address = read(PC) + X;  // Adding Offset
     
@@ -275,7 +275,7 @@ byte getZPGXAddr() {
 }
 
 // Returns zeropage, X-indexed Address
-byte getZPGYAddr() {
+u8 getZPGYAddr() {
     PC++;
     temp_address = read(PC) + Y;  // Adding Offset
     
@@ -284,10 +284,10 @@ byte getZPGYAddr() {
 
 
 // Returns an indirect Address
-byte getIndirectAddr() {
-    byte tmp_addr1 = 0; // HighByte
-    byte tmp_addr2 = 0; //LowByte
-    word tmp_addr = 0;  //Placeholder Address
+u8 getIndirectAddr() {
+    u8 tmp_addr1 = 0; // HighByte
+    u8 tmp_addr2 = 0; //LowByte
+    u16 tmp_addr = 0;  //Placeholder Address
 
     PC++;
     tmp_addr1 = read(PC);
@@ -304,10 +304,10 @@ byte getIndirectAddr() {
 }
 
 // Returns indirect, x-indexed Address
-byte getIndirectXAddr() {
-    byte tmp_addr1 = 0;
-    byte tmp_addr2 = 0;
-    word tmp_addr = 0;
+u8 getIndirectXAddr() {
+    u8 tmp_addr1 = 0;
+    u8 tmp_addr2 = 0;
+    u16 tmp_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC) + X;
@@ -323,10 +323,10 @@ byte getIndirectXAddr() {
 }
 
 // Returns indirect, y-indexed Address
-byte getIndirectYAddr() {
-    byte tmp_addr1 = 0;
-    byte tmp_addr2 = 0;
-    word tmp_addr = 0;
+u8 getIndirectYAddr() {
+    u8 tmp_addr1 = 0;
+    u8 tmp_addr2 = 0;
+    u16 tmp_addr = 0;
 
     PC++;
     tmp_addr1 = read(PC);
@@ -501,7 +501,7 @@ void INY() {
 
 // Increase Memory by 1
 void INC() {
-    byte foo = read(temp_address);
+    u8 foo = read(temp_address);
     foo++;
     write(foo,temp_address);
 
@@ -513,7 +513,7 @@ void INC() {
 
 // Decrement Memory by 1
 void DEC() {
-    byte data = read(temp_address);
+    u8 data = read(temp_address);
     data = data - 1;
 
     SR.Z = (data==0);
@@ -625,7 +625,7 @@ void STY() {
 // FLAGS NOT DONE
 // Rotate Memory 1 Bit right
 void ROR() {
-    byte data = read(temp_address);
+    u8 data = read(temp_address);
     data = data >> 1;
     write(data,temp_address);
     PC++;
@@ -641,7 +641,7 @@ void ROR_A() {
 // Rotate Memory 1 Bit left
 void ROL() {
 
-    byte data = read(temp_address);
+    u8 data = read(temp_address);
     data = data << 1;
     write(data,temp_address);
     PC++;
@@ -656,7 +656,7 @@ void ROL_A() {
 // FLAGS NOT DONE
 // Shift Bits to right by 1
 void LSR() {
-    byte data = read(temp_address);
+    u8 data = read(temp_address);
     data = data >> 1;
     write(data,temp_address);
     PC++;
@@ -670,8 +670,8 @@ void LSR_A() {
 
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
 void ASL() {
-    byte data = read(temp_address);
-    byte oldCarry = getBit(&data,7) >> 7;
+    u8 data = read(temp_address);
+    u8 oldCarry = getBit(&data,7) >> 7;
 
     SR.C = oldCarry;
     data = data << 1;
@@ -687,7 +687,7 @@ void ASL() {
 
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
 void ASL_A(){
-    byte oldCarry = getBit(&A,7) >> 7;
+    u8 oldCarry = getBit(&A,7) >> 7;
     SR.C = oldCarry;
     A = A << 1;
     clearBit(&A,0);
@@ -744,7 +744,7 @@ void JSR() {
 
 // Add memory to A
 void ADC() {
-    word temp = A + temp_data; // Temp Variable to check for Overflow
+    u16 temp = A + temp_data; // Temp Variable to check for Overflow
     A = A + temp_data;
 
     SR.V = (temp > 255); // Value > 255 means overflow
@@ -773,7 +773,7 @@ void SBC() {
 
 // Return from Interrupt
 void RTI() {
-    //byte oldStatus = P;
+    //u8 oldStatus = P;
     SR.reg = read(SP);
     SP++;
 
@@ -806,7 +806,7 @@ void BVC() {
     if(SR.V == 0) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -820,7 +820,7 @@ void BVS() {
     if(SR.V) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -834,7 +834,7 @@ void BEQ() {
     if(SR.Z) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -847,7 +847,7 @@ void BNE() {
     if(SR.Z == 0x00) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -860,7 +860,7 @@ void BPL() {
     if(SR.N == 0x00) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -873,7 +873,7 @@ void BMI() {
     if(SR.N) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -886,7 +886,7 @@ void BCC() {
     if(SR.C == 0) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -899,7 +899,7 @@ void BCS() {
     if(SR.C) 
     {   
         PC++;
-        byte foo = read(PC);
+        u8 foo = read(PC);
         PC = PC + foo;
     }
     else {
@@ -909,7 +909,7 @@ void BCS() {
 
 // Compare Accumulator with data
 void CMP() {
-    byte result = A - temp_data;
+    u8 result = A - temp_data;
 
     // Set zero Bit if Result is 0 (A and data same value)
     SR.Z = (A == temp_data);
@@ -923,7 +923,7 @@ void CMP() {
 
 // Compare X with data
 void CPX() {
-    byte result = X - temp_data;
+    u8 result = X - temp_data;
 
     // Set zero Bit if Result is 0 (X and data same value)
     SR.Z = (X == temp_data);
@@ -936,7 +936,7 @@ void CPX() {
 
 // Compare Y with data
 void CPY() {
-    byte result = Y - temp_data;
+    u8 result = Y - temp_data;
 
     // Set zero Bit if Result is 0 (X and data same value)
     SR.Z = (Y == temp_data);
@@ -949,8 +949,8 @@ void CPY() {
 
 // Bit Test -> check if Bits of a target memory location are set
 void BIT() {
-    byte data = read(temp_address);
-    byte result = A & data;
+    u8 data = read(temp_address);
+    u8 result = A & data;
 
     SR.Z = (result==0);
     // Copy Bit 7 and 6 of the value 
@@ -970,7 +970,7 @@ void BIT() {
 */
 
 // Addressing Mode Lookup-table
-const byte (*mode_lookup[256])() = {
+const u8 (*mode_lookup[256])() = {
                                         &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsolute,&getAbsoluteAddr,&noMode, // 0x00-0x0F
                                         &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x10-0x1F
                                         &noMode,&getIndirectX,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x20-0x2F
@@ -1010,7 +1010,7 @@ const void (*inst_lookup[256])() = {
 };
 
 // Cycles per Instruction Lookup Table
-const byte cycle_lookup[256] = {
+const u8 cycle_lookup[256] = {
                                     7, 6, 0, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6, //0x00-0x0F
                                     2, 5, 0, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7, //0x10-0x1F
                                     6, 6, 0, 8, 3, 3, 5, 5, 4, 2, 2, 2, 4, 4, 6, 6, //0x20-0x2F

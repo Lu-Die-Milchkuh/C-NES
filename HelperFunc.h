@@ -4,13 +4,13 @@
 
 
 // Set Bit @ Index, set to 1
-void setBit(byte* reg,byte index);
+void setBit(u8* reg,u8 index);
 
 // Clear Bit @ Index, set to 0
-void clearBit(byte* reg,byte index);
+void clearBit(u8* reg,u8 index);
 
 // Returns Bit @ given Index
-byte getBit(byte* reg,byte index);
+u8 getBit(u8* reg,u8 index);
 
 // Get Binary Presentation of a given value,size used for bit count
 void bin(unsigned value,int size);

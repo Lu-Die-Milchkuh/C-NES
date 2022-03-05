@@ -4,19 +4,19 @@
 #include "PPU.h"
 #include "Mapper.h"
 
-byte palette[32] = {0};
-byte patternTable[2][4096] = {0};
-byte nameTable[2][1024] = {0};
+u8 palette[32] = {0};
+u8 patternTable[2][4096] = {0};
+u8 nameTable[2][1024] = {0};
 
-byte OAM[64] = {0};
-byte oam_address = 0;
+u8 OAM[64] = {0};
+u8 oam_address = 0;
 
 // Internal Communication
-byte ppu_latch = 0;
-byte ppu_data_buffer = 0;
+u8 ppu_latch = 0;
+u8 ppu_data_buffer = 0;
 
 // Pixel offset horizontally
-byte fine_x = 0;
+u8 fine_x = 0;
 
 
 loopy_register vram_address;
@@ -29,9 +29,9 @@ PPUCTRL control;
 
 
 
-byte PPU_CPU_READ(word address) {
+u8 PPU_CPU_READ(u16 address) {
 
-    byte data = 0;
+    u8 data = 0;
 
     switch(address) {
         case PPUCTRL_ADDRESS: // not readable
@@ -79,7 +79,7 @@ byte PPU_CPU_READ(word address) {
 
 
 
-void PPU_CPU_WRITE(byte data,word address) {
+void PPU_CPU_WRITE(u8 data,u16 address) {
     switch (address)
     {
     case PPUCTRL_ADDRESS:
@@ -122,7 +122,7 @@ void PPU_CPU_WRITE(byte data,word address) {
         if (ppu_latch == 0)
 		{
 			
-			tram_address.reg = (word)((data & 0x3F) << 8) | (tram_address.reg & 0x00FF);
+			tram_address.reg = (u16)((data & 0x3F) << 8) | (tram_address.reg & 0x00FF);
 			ppu_latch = 1;
 		}
 		else
@@ -145,8 +145,8 @@ void PPU_CPU_WRITE(byte data,word address) {
 
 
 
-byte PPU_READ(word address) {
-    byte data = 0;
+u8 PPU_READ(u16 address) {
+    u8 data = 0;
     address = address & 0x3FFF;
 
     if (address >= 0x0000 && address <= 0x1FFF)
@@ -200,7 +200,7 @@ byte PPU_READ(word address) {
 
 
 
-void PPU_WRITE(byte data,word address) {
+void PPU_WRITE(u8 data,u16 address) {
 
     address &= 0x3FFF;
 
