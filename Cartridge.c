@@ -31,7 +31,7 @@ void loadROM(char* path) {
     // Is a trainer present?
     if(header.mapper1 & 0x04)
     {
-        // Skip 512 bytess
+        // Skip 512 bytes
         fseek(file,512,SEEK_SET);
     }
 
