@@ -671,9 +671,8 @@ void LSR_A() {
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
 void ASL() {
     u8 data = read(temp_address);
-    u8 oldCarry = getBit(&data,7) >> 7;
-
-    SR.C = oldCarry;
+     
+    SR.C = data >> 7;;
     data = data << 1;
     clearBit(&data,0);
 
@@ -687,8 +686,8 @@ void ASL() {
 
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
 void ASL_A(){
-    u8 oldCarry = getBit(&A,7) >> 7;
-    SR.C = oldCarry;
+    
+    SR.C = A >> 7;
     A = A << 1;
     clearBit(&A,0);
 
@@ -844,7 +843,7 @@ void BEQ() {
 
 // Branch if Result was NOT zero 
 void BNE() {
-    if(SR.Z == 0x00) 
+    if(!SR.Z) 
     {   
         PC++;
         u8 foo = read(PC);
@@ -857,7 +856,7 @@ void BNE() {
 
 // Branch if Result was positive
 void BPL() {
-    if(SR.N == 0x00) 
+    if(!SR.N) 
     {   
         PC++;
         u8 foo = read(PC);
@@ -883,7 +882,7 @@ void BMI() {
 
 // Branch if Carry is 0
 void BCC() {
-    if(SR.C == 0) 
+    if(!SR.C) 
     {   
         PC++;
         u8 foo = read(PC);
