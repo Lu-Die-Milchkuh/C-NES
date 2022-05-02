@@ -1062,7 +1062,7 @@ void CPU_RUN() {
     (*inst_lookup[opcode])();
     
 }
-
+/*
 void CPU_STATUS() {
     printf("OPCODE: %x\n",opcode);
     printf("A:\t%X\n",A);
@@ -1071,4 +1071,4 @@ void CPU_STATUS() {
     printf("SP:\t%X\n",SP);
     printf("PC:\t%X\n",PC);
 
-}
+}*/
