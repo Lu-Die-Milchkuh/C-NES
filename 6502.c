@@ -1072,4 +1072,3 @@ void CPU_STATUS() {
     printf("PC:\t%X\n",PC);
 
 }
-
