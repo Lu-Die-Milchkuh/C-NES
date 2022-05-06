@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -O2 -lSDL2 -lvulkan -I include/
+CFLAGS = -Wall -O2 -lvulkan -lSDL2 -I include/
 SRC_DIR = src
 OBJ_DIR = obj
 TARGET = Nessi
