@@ -16,8 +16,10 @@ dir:
 	mkdir -p $(OBJ_DIR)
 	mkdir -p $(TARGET_DIR)
 
+
 $(OBJS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c  $< -o $@
+
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET_DIR)/$(TARGET)
