@@ -1,12 +1,23 @@
 CC = gcc
-CFLAGS = -Wall -O2 -lSDL2
-FILES = 6502.c Bus.c HelperFunc.c PPU.c Mapper.c Cartridge.c
-OUT_FILE = Nessi
+CFLAGS = -Wall -O2 -lSDL2 -I include/
+SRC_DIR := src
+OBJ_DIR := obj
+TARGET = Nessi
+TARGET_DIR = bin
 
-default: dir compile 
+SRC := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
+
+
+all:	dir $(OBJS) $(TARGET)
+
 
 dir:
-	mkdir -p build
+	mkdir -p $(OBJ_DIR)
+	mkdir -p $(TARGET_DIR)
 
-compile:
-	$(CC) $(CFLAGS) $(FILES) -o build/$(OUT_FILE)
+$(OBJS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c  $< -o $@
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET_DIR)/$(TARGET)
