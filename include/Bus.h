@@ -4,7 +4,7 @@
 
 
 // Write Data to Address in memory, CPU Bus
-void write(u8 data,u16 address);
+void bus_write(u8 data,u16 address);
 
 // Read data from given address, CPU Bus
-u8 read(u16 address);
+u8 bus_read(u16 address);

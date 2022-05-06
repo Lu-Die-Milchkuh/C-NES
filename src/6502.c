@@ -37,7 +37,7 @@ u8 opcode = 0;
 // Return next Byte, Immediate Addressing Mode
 u8 getImmediate() {
     PC++;
-    temp_data = read(PC);   
+    temp_data = bus_read(PC);   
     return 0;
 }
 
@@ -45,8 +45,8 @@ u8 getImmediate() {
 u8 getZPG() {
     u8 zpg_addr = 0;  // Zero Page Address
     PC++;
-    zpg_addr = read(PC);
-    temp_data = read(zpg_addr);
+    zpg_addr = bus_read(PC);
+    temp_data = bus_read(zpg_addr);
     return 0;
 
 }
@@ -56,8 +56,8 @@ u8 getZPG() {
 u8 getZPGX() {
     u8 zpg_addr = 0;  // Zero Page Addrsss
     PC++;
-    zpg_addr = read(PC) + X;  // Adding Offset
-    temp_data = read(zpg_addr);
+    zpg_addr = bus_read(PC) + X;  // Adding Offset
+    temp_data = bus_read(zpg_addr);
     return 0;
 }
 
@@ -65,8 +65,8 @@ u8 getZPGX() {
 u8 getZPGY() {
     u8 zpg_addr = 0;  // Zero Page Addrsss
     PC++;
-    zpg_addr = read(PC) + Y;  // Adding Offset
-    temp_data = read(zpg_addr);
+    zpg_addr = bus_read(PC) + Y;  // Adding Offset
+    temp_data = bus_read(zpg_addr);
     return 0;
 }
 
@@ -77,13 +77,13 @@ u8 getAbsolute() {
     u8 highByte,lowByte;
 
     PC++;
-    lowByte = read(PC);
+    lowByte = bus_read(PC);
     PC++;
-    highByte = read(PC);
+    highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
-    temp_data = read(address);
+    temp_data = bus_read(address);
 
     return 0;
 }
@@ -95,14 +95,14 @@ u8 getAbsoluteX() {
     u8 highByte,lowByte;
 
     PC++;
-    lowByte = read(PC);
+    lowByte = bus_read(PC);
     PC++;
-    highByte = read(PC);
+    highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += X;   // Adding Offset
-    temp_data = read(address);
+    temp_data = bus_read(address);
     return 0;
 }
 
@@ -113,14 +113,14 @@ u8 getAbsoluteY() {
     u8 highByte,lowByte;
 
     PC++;
-    lowByte = read(PC);
+    lowByte = bus_read(PC);
     PC++;
-    highByte = read(PC);
+    highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += Y;   // Adding Offset
-    temp_data = read(address);
+    temp_data = bus_read(address);
 
     return 0;
 }
@@ -138,16 +138,16 @@ u8 getIndirect() {
     u16 real_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC);
+    tmp_addr1 = bus_read(PC);
     PC++;
-    tmp_addr2 = read(PC);
+    tmp_addr2 = bus_read(PC);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
 
-    real_addr = read(tmp_addr+1) << 8 | read(tmp_addr);
-    temp_data = read(real_addr);
+    real_addr = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
+    temp_data = bus_read(real_addr);
 
     return 0;
 }
@@ -160,16 +160,16 @@ u8 getIndirectX() {
     u16 real_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC) + X;
+    tmp_addr1 = bus_read(PC) + X;
     PC++;
-    tmp_addr2 = read(PC) + X;
+    tmp_addr2 = bus_read(PC) + X;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
-    real_addr = read(tmp_addr+1) << 8 | read(tmp_addr);
+    real_addr = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
 
-    temp_data = read(real_addr);
+    temp_data = bus_read(real_addr);
     return 0;
 }
 
@@ -181,20 +181,20 @@ u8 getIndirectY() {
     u16 real_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC);
+    tmp_addr1 = bus_read(PC);
     PC++;
-    tmp_addr2 = read(PC) ;
+    tmp_addr2 = bus_read(PC) ;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
-    real_addr = read(tmp_addr+1) << 8 | read(tmp_addr);
+    real_addr = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
     real_addr += Y;
-    temp_data = read(real_addr);
+    temp_data = bus_read(real_addr);
     return 0;
 }
 
-// Some instrctions are implied . which means all the needed infromations are already present
+// Some instrctions are implied . which means all the needed infromations are albus_ready present
 u8 noMode() {
     return 0;
 }
@@ -213,9 +213,9 @@ u8 getAbsoluteAddr() {
     u8 highByte,lowByte;
 
     PC++;
-    lowByte = read(PC); 
+    lowByte = bus_read(PC); 
     PC++;
-    highByte = read(PC);
+    highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     temp_address = (highByte << 8 | lowByte); 
@@ -228,9 +228,9 @@ u8 getAbsoluteXAddr() {
     u8 highByte,lowByte;
 
     PC++;
-    lowByte = read(PC);
+    lowByte = bus_read(PC);
     PC++;
-    highByte = read(PC);
+    highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     temp_address = (highByte << 8 | lowByte); 
@@ -245,9 +245,9 @@ u8 getAbsoluteYAddr() {
     u8 highByte,lowByte;
 
     PC++;
-    lowByte = read(PC);
+    lowByte = bus_read(PC);
     PC++;
-    highByte = read(PC);
+    highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
     temp_address = (highByte << 8 | lowByte); 
@@ -260,7 +260,7 @@ u8 getAbsoluteYAddr() {
 // Returns zeropage address
 u8 getZPGAddr() {
     PC++;
-    temp_address = read(PC);
+    temp_address = bus_read(PC);
     
     return 0;
 
@@ -269,7 +269,7 @@ u8 getZPGAddr() {
 // Returns zeropage, X-indexed Address
 u8 getZPGXAddr() {
     PC++;
-    temp_address = read(PC) + X;  // Adding Offset
+    temp_address = bus_read(PC) + X;  // Adding Offset
     
     return 0;
 }
@@ -277,7 +277,7 @@ u8 getZPGXAddr() {
 // Returns zeropage, X-indexed Address
 u8 getZPGYAddr() {
     PC++;
-    temp_address = read(PC) + Y;  // Adding Offset
+    temp_address = bus_read(PC) + Y;  // Adding Offset
     
     return 0;
 }
@@ -290,15 +290,15 @@ u8 getIndirectAddr() {
     u16 tmp_addr = 0;  //Placeholder Address
 
     PC++;
-    tmp_addr1 = read(PC);
+    tmp_addr1 = bus_read(PC);
     PC++;
-    tmp_addr2 = read(PC);
+    tmp_addr2 = bus_read(PC);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
 
-    temp_address = read(tmp_addr+1) << 8 | read(tmp_addr);
+    temp_address = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
     
     return 0;
 }
@@ -310,14 +310,14 @@ u8 getIndirectXAddr() {
     u16 tmp_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC) + X;
+    tmp_addr1 = bus_read(PC) + X;
     PC++;
-    tmp_addr2 = read(PC) + X;
+    tmp_addr2 = bus_read(PC) + X;
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
-    temp_address = read(tmp_addr+1) << 8 | read(tmp_addr);
+    temp_address = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
 
     return 0;
 }
@@ -329,14 +329,14 @@ u8 getIndirectYAddr() {
     u16 tmp_addr = 0;
 
     PC++;
-    tmp_addr1 = read(PC);
+    tmp_addr1 = bus_read(PC);
     PC++;
-    tmp_addr2 = read(PC);
+    tmp_addr2 = bus_read(PC);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
     tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
-    temp_address = read(tmp_addr+1) << 8 | read(tmp_addr);
+    temp_address = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
     temp_address += Y;
 
     return 0;
@@ -446,7 +446,7 @@ void CLV() {
 
 // Push A on Stack
 void PHA() {
-    write(A,SP);
+    bus_write(A,SP);
     SP--;
     PC++;
 }
@@ -454,7 +454,7 @@ void PHA() {
 
 // Pull A from Stack
 void PLA() {
-    A = read(SP);
+    A = bus_read(SP);
 
     SR.Z = (A==0);
     SR.N = (A>>7);
@@ -466,14 +466,14 @@ void PLA() {
 
 // Push Status Register on Stack
 void PHP() {
-    write(SR.reg,SP);
+    bus_write(SR.reg,SP);
     SP--;
     PC++;
 }
 
 // Pull Status Register from Stack
 void PLP() {
-    SR.reg = read(SP);
+    SR.reg = bus_read(SP);
     SP++;
     PC++;
 }
@@ -501,9 +501,9 @@ void INY() {
 
 // Increase Memory by 1
 void INC() {
-    u8 foo = read(temp_address);
+    u8 foo = bus_read(temp_address);
     foo++;
-    write(foo,temp_address);
+    bus_write(foo,temp_address);
 
     SR.Z = (foo==0);
     SR.N = (foo>>7);
@@ -513,13 +513,13 @@ void INC() {
 
 // Decrement Memory by 1
 void DEC() {
-    u8 data = read(temp_address);
+    u8 data = bus_read(temp_address);
     data = data - 1;
 
     SR.Z = (data==0);
     SR.N = (data>>7);
 
-    write(data,temp_address);
+    bus_write(data,temp_address);
     
     PC++;
 }
@@ -606,28 +606,28 @@ void TXS(){
 
 // Store A in Memory(Address might be only 8-Bit)
 void STA() {
-    write(A,temp_address);
+    bus_write(A,temp_address);
     PC++;
 }
 
 // Store X in Memory
 void STX() {
-    write(X,temp_address);
+    bus_write(X,temp_address);
     PC++;
 }
 
 // Store Y in Memory
 void STY() {
-    write(Y,temp_address);
+    bus_write(Y,temp_address);
     PC++;
 }
 
 // FLAGS NOT DONE
 // Rotate Memory 1 Bit right
 void ROR() {
-    u8 data = read(temp_address);
+    u8 data = bus_read(temp_address);
     data = data >> 1;
-    write(data,temp_address);
+    bus_write(data,temp_address);
     PC++;
 }
 
@@ -641,9 +641,9 @@ void ROR_A() {
 // Rotate Memory 1 Bit left
 void ROL() {
 
-    u8 data = read(temp_address);
+    u8 data = bus_read(temp_address);
     data = data << 1;
-    write(data,temp_address);
+    bus_write(data,temp_address);
     PC++;
 }
 
@@ -656,9 +656,9 @@ void ROL_A() {
 // FLAGS NOT DONE
 // Shift Bits to right by 1
 void LSR() {
-    u8 data = read(temp_address);
+    u8 data = bus_read(temp_address);
     data = data >> 1;
-    write(data,temp_address);
+    bus_write(data,temp_address);
     PC++;
 }
 
@@ -670,7 +670,7 @@ void LSR_A() {
 
 // ASL shifts all bits left one position. 0 is shifted into bit 0 and the original bit 7 is shifted into the Carry.
 void ASL() {
-    u8 data = read(temp_address);
+    u8 data = bus_read(temp_address);
      
     SR.C = data >> 7;;
     data = data << 1;
@@ -680,7 +680,7 @@ void ASL() {
     SR.N = (data>>7);
    
     // Writing new Value back to memory location
-    write(data,temp_address);
+    bus_write(data,temp_address);
     PC++;
 }
 
@@ -735,9 +735,9 @@ void JMP() {
 
 // Jump to Subroutine
 void JSR() {
-    write((PC+2),SP); // Push return address to Stack
+    bus_write((PC+2),SP); // Push return address to Stack
     SP--;
-    PC = read(temp_address);
+    PC = bus_read(temp_address);
 
 }
 
@@ -773,27 +773,27 @@ void SBC() {
 // Return from Interrupt
 void RTI() {
     //u8 oldStatus = P;
-    SR.reg = read(SP);
+    SR.reg = bus_read(SP);
     SP++;
 
-    PC = read(SP);
+    PC = bus_read(SP);
     SP++;
     
 }
 
 // Return from Subroutine
 void RTS() {
-    PC = read(SP);
+    PC = bus_read(SP);
     SP++;
 }
 
 // Force Break, software interrupt
 void BRK() {
-    write((PC+2),SP); // Push return address to Stack
+    bus_write((PC+2),SP); // Push return address to Stack
     SP--;
     // Set Break Bit
     SR.B = 1;
-    write(SR.reg,SP); // Push Status Register to Stack
+    bus_write(SR.reg,SP); // Push Status Register to Stack
     SP--;
     PC++; // NOT SURE
 
@@ -805,7 +805,7 @@ void BVC() {
     if(SR.V == 0) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -819,7 +819,7 @@ void BVS() {
     if(SR.V) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -833,7 +833,7 @@ void BEQ() {
     if(SR.Z) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -846,7 +846,7 @@ void BNE() {
     if(!SR.Z) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -859,7 +859,7 @@ void BPL() {
     if(!SR.N) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -872,7 +872,7 @@ void BMI() {
     if(SR.N) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -885,7 +885,7 @@ void BCC() {
     if(!SR.C) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -898,7 +898,7 @@ void BCS() {
     if(SR.C) 
     {   
         PC++;
-        u8 foo = read(PC);
+        u8 foo = bus_read(PC);
         PC = PC + foo;
     }
     else {
@@ -948,7 +948,7 @@ void CPY() {
 
 // Bit Test -> check if Bits of a target memory location are set
 void BIT() {
-    u8 data = read(temp_address);
+    u8 data = bus_read(temp_address);
     u8 result = A & data;
 
     SR.Z = (result==0);
@@ -1044,7 +1044,7 @@ void CPU_RESET() {
     X = 0;
     Y = 0;
     SR.reg = 0;
-    PC = read(0xFFFD)  << 8 | read(0xFFFC); // Set PC to Reset Vector
+    PC = bus_read(0xFFFD)  << 8 | bus_read(0xFFFC); // Set PC to Reset Vector
     SP = 0xFF;
     printf("PC on RESET: HEX: %x DEC: %d \n",PC,PC);
 }
@@ -1053,7 +1053,7 @@ void CPU_RESET() {
 // Decoding and executing instructions
 void CPU_RUN() {
     
-    opcode = read(PC);
+    opcode = bus_read(PC);
     
     // Checking which addressing mode the instruction will be using
     (*mode_lookup[opcode])(); 
