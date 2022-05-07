@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _TYPES
 #define _TYPES 1
 #endif

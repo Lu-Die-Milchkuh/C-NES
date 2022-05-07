@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _TYPES
 #include "Types.h"
 #endif

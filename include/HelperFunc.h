@@ -1,6 +1,6 @@
-#ifndef _TYPES
+#pragma once
 #include "Types.h"
-#endif  
+
 
 
 // Set Bit @ Index, set to 1

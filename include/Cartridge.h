@@ -1,6 +1,6 @@
-#ifndef _TYPES
+#pragma once
 #include "Types.h"
-#endif
+
 
 // Pointer containing content of ROM
 extern u8* cartridge_pgr_memory;

@@ -1,6 +1,6 @@
-#ifndef _TYPES
+#pragma once
 #include "Types.h"
-#endif
+
 
 //The pattern table is divided into two 256-tile sections: $0000-$0FFF, nicknamed "left", and $1000-$1FFF, nicknamed "right".
 extern u8 patternTable[2][4096];
