@@ -53,10 +53,10 @@ extern STATUS SR; // Status Register
 extern u8 memory[2048];
 
 // Reset all internal Register
-void CPU_RESET();
+void CPU_RESET(void);
 
 // Execute Instruction
-void CPU_RUN();
+void CPU_RUN(void);
 
 
-void CPU_STATUS();
+void CPU_STATUS(void);
