@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -O2 -lSDL2 -lvulkan -I include/
+CFLAGS = -Wall -Wextra -O2 -lSDL2 -lvulkan -I include/
 SRC_DIR = src
 OBJ_DIR = obj
 TARGET = Nessi
@@ -23,3 +23,6 @@ $(OBJS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
 
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET_DIR)/$(TARGET)
+
+clean:
+	rm -rf $(OBJ_DIR)
