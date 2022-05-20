@@ -98,7 +98,7 @@ void getAbsoluteX(void) {
     // Creating a 16 Bit Address out of 2 Bytes
     address = (highByte << 8 | lowByte); 
     address += X;   // Adding Offset
-    temp_data = bus_read(address);
+    temp_data = bus_read(address); 
 
 }
 
@@ -188,7 +188,7 @@ void getIndirectY(void) {
 
 }
 
-// Some instrctions are implied . which means all the needed infromations are albus_ready present
+// Some instrctions are implied . which means all the needed infromations are already present
 void noMode(void) {
     
 }
@@ -339,6 +339,7 @@ void getIndirectYAddr(void) {
 void illegalOpcode(void) {
     printf("ILLEGAL INSTRUCTION: %X",opcode);
     exit(-1);
+
 }
 
 
@@ -786,15 +787,14 @@ void BRK(void) {
 // Branch if Overflow Bit is 0
 void BVC(void) {
     // Skip n-bytes if overflow is cleared
-    if(SR.V == 0) 
+    if(!SR.V) 
     {   
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if Overflow Bit is 1
@@ -805,10 +805,9 @@ void BVS(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if Result was zero
@@ -818,11 +817,10 @@ void BEQ(void) {
     {   
         PC++;
         u8 foo = bus_read(PC);
-        PC = PC + foo;
+        PC = PC + foo; 
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if Result was NOT zero 
@@ -832,10 +830,9 @@ void BNE(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if Result was positive
@@ -845,10 +842,9 @@ void BPL(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if Result was negative
@@ -858,10 +854,9 @@ void BMI(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if Carry is 0
@@ -871,10 +866,9 @@ void BCC(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Branch if carry is 1
@@ -884,10 +878,9 @@ void BCS(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+        return;
     }
-    else {
-       PC++; 
-    }
+    PC++; 
 }
 
 // Compare Accumulator with data
@@ -921,7 +914,7 @@ void CPX(void) {
 void CPY(void) {
     u8 result = Y - temp_data;
 
-    // Set zero Bit if Result is 0 (X and data same value)
+    // Set zero Bit if Result is 0 (Y and data same value)
     SR.Z = (Y == temp_data);
     // Set Carry
     SR.C = (Y >= temp_data);
@@ -953,7 +946,7 @@ void BIT(void) {
 */
 
 // Addressing Mode Lookup-table
-const void (*mode_lookup[256])() = {
+void (*mode_lookup[256])(void) = {
                                         &noMode,&getIndirectX,&noMode,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsolute,&getAbsoluteAddr,&noMode, // 0x00-0x0F
                                         &noMode,&getIndirectY,&noMode,&noMode,&noMode,&getZPGX,&getZPGXAddr,&noMode,&noMode,&getAbsoluteY,&noMode,&noMode,&noMode,&getAbsoluteX,&getAbsoluteXAddr,&noMode, //0x10-0x1F
                                         &noMode,&getIndirectX,&noMode,&noMode,&getZPG,&getZPGAddr,&noMode,&noMode,&getImmediate,&noMode,&noMode,&noMode,&getAbsoluteAddr,&getAbsoluteAddr,&getAbsoluteAddr,&noMode, // 0x20-0x2F
@@ -973,7 +966,7 @@ const void (*mode_lookup[256])() = {
 };
 
 // Instruction Lookup-table
-const void (*inst_lookup[256])() = {
+void (*inst_lookup[256])(void) = {
                                         &BRK,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode,&PHP,&ORA,&ASL_A,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode, // 0x00-0x0F
                                         &BPL,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode,&CLC,&ORA,&illegalOpcode,&illegalOpcode,&illegalOpcode,&ORA,&ASL,&illegalOpcode, //0x10-0x1F
                                         &JSR,&AND,&illegalOpcode,&illegalOpcode,&BIT,&AND,&ROL,&illegalOpcode,&PLP,&AND,&ROL_A,&illegalOpcode,&BIT,&AND,&ROL,&illegalOpcode, //0x20-0x2F
@@ -1030,7 +1023,7 @@ void CPU_RESET(void) {
     SR.reg = 0;
     PC = bus_read(0xFFFD)  << 8 | bus_read(0xFFFC); // Set PC to Reset Vector
     SP = 0xFF;
-    printf("PC on RESET: HEX: %x DEC: %d \n",PC,PC);
+    printf("PC on RESET -> HEX: %x DEC: %d \n",PC,PC);
 }
 
 
@@ -1038,7 +1031,7 @@ void CPU_RESET(void) {
 void CPU_RUN(void) {
     
     opcode = bus_read(PC);
-    
+
     // Checking which addressing mode the instruction will be using
     (*mode_lookup[opcode])(); 
 
@@ -1046,13 +1039,17 @@ void CPU_RUN(void) {
     (*inst_lookup[opcode])();
     
 }
-/*
+
 void CPU_STATUS(void) {
+    printf("---------------\n");
     printf("OPCODE: %x\n",opcode);
     printf("A:\t%X\n",A);
     printf("X:\t%X\n",X);
     printf("Y:\t%X\n",Y);
     printf("SP:\t%X\n",SP);
     printf("PC:\t%X\n",PC);
+    printf("STATUS:\t%x\t",SR.reg);
+    bin(SR.reg,8);
+    printf("\n");
 
-}*/
+}
