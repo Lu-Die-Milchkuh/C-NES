@@ -7,35 +7,80 @@
 #endif
 
 #include <SDL2/SDL.h>
-#include <vulkan/vulkan.h>
+#include <SDL2/SDL_vulkan.h>
+#include "Render.h"
 
 
 SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
+VulkanContext* vkContext = NULL;
+
+
+// Create Vulkan Instance
+int initVkInstance(VulkanContext* context) {
+    
+    VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
+    applicationInfo.pApplicationName = "Nessi";
+    applicationInfo.applicationVersion = VK_MAKE_VERSION(0,0,1);
+    applicationInfo.apiVersion = VK_API_VERSION_1_0; 
+
+    VkInstanceCreateInfo createInfo = {
+        VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        0,
+        0,
+        &applicationInfo,
+        0,
+        0,
+        0,
+        0
+    };
+ 
+    if(vkCreateInstance(&createInfo,0,&context->instance) != VK_SUCCESS) {
+        printf("Error vkCreateInstance!\n");
+        return 0;
+    }
+
+    return 1;
+}
+
+// Create Vulkan Context
+VulkanContext* initVulkan(void) {
+    VulkanContext* context = malloc(sizeof(VulkanContext));
+    
+    if(!context) {
+        printf("Error reserving Memory for VulkanContext!\n");
+        return NULL;
+    }
+
+    if(!initVkInstance(context)) {
+        printf("Couldt not create VKInstance!\n");
+        return NULL;
+    }
+
+    return context;
+}
 
 
 // Create SDL Window
-void RENDER_INIT() {
+void Render_Init() {
     
     if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
-        printf("Error initializing SDL!");
+        printf("Error initializing SDL!\n");
         exit(-1);
     }
 
-    window = SDL_CreateWindow("C_NES",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,1000, 1000, 0);
+    window = SDL_CreateWindow("Nessi",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,256, 240, SDL_WINDOW_VULKAN);
 
-    if(window == NULL) 
+    if(!window) 
     {
-        printf("Error creating Window!");
+        printf("Error creating SDL Window!\n");
         exit(-1);
     }
-
-    renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
-
-    if(renderer == NULL) 
-    {
-        printf("Error creating Renderer!");
+    
+    vkContext = initVulkan();
+    
+    if(!vkContext) {
+        printf("Failed to create VulkanContext!\n");
         exit(-1);
     }
 
@@ -43,12 +88,9 @@ void RENDER_INIT() {
 }
 
 
-void RENDER_TEXTURE(SDL_Texture* texture,int x, int y) {}
-
-
 // Clear up every SDL related stuff
-void RENDER_DESTROY() {
-    
+void Render_Destroy() {
     SDL_DestroyWindow(window);
+    free(vkContext);
     SDL_Quit();
 }
