@@ -188,7 +188,7 @@ void getIndirectY(void) {
 
 }
 
-// Some instrctions are implied . which means all the needed infromations are already present
+// Some instrctions are implied . which means all the needed informations are already present
 void noMode(void) {
     
 }
