@@ -60,7 +60,7 @@ int getPhysicalDevice(VulkanContext* context) {
 
     
     if(!device_count) {
-        printf("Error: Could not find Phsical Devices!\n");
+        printf("Error: Could not find Physical Devices!\n");
         return 0;
     }
 
