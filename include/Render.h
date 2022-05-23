@@ -5,6 +5,8 @@
 // Struct to Store all Vulkan-related data
 typedef struct {
     VkInstance instance;
+    VkPhysicalDevice pyhsical_device;
+    VkPhysicalDeviceProperties pyhsical_device_properties;
 } VulkanContext;
 
 VulkanContext* initVulkan(void);

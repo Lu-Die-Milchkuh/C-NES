@@ -17,7 +17,13 @@ VulkanContext* vkContext = NULL;
 
 // Create Vulkan Instance
 int initVkInstance(VulkanContext* context) {
-    
+
+    /*
+    // Set VK Layers
+    const char* enabledLayers[] = {
+        "VK_LAYER_KHRONOS_validation",
+    };*/
+
     VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
     applicationInfo.pApplicationName = "Nessi";
     applicationInfo.applicationVersion = VK_MAKE_VERSION(0,0,1);
@@ -35,12 +41,56 @@ int initVkInstance(VulkanContext* context) {
     };
  
     if(vkCreateInstance(&createInfo,0,&context->instance) != VK_SUCCESS) {
-        printf("Error vkCreateInstance!\n");
+        printf("Error: Could not create vkCreateInstance!\n");
         return 0;
     }
 
     return 1;
 }
+
+// Find GPU(s) that support Vulkan
+int getPhysicalDevice(VulkanContext* context) {
+    // Numbers of GPUs that support Vulkan
+    unsigned int device_count = 0;
+
+    if(vkEnumeratePhysicalDevices(context->instance,&device_count,0) != VK_SUCCESS) {
+        printf("Error: Could not find Phsical Devices!\n");
+        return 0;
+    }
+
+    
+    if(!device_count) {
+        printf("Error: Could not find Phsical Devices!\n");
+        return 0;
+    }
+
+    // List to store all GPUs that were found
+    VkPhysicalDevice* devices = malloc(device_count * sizeof(VkPhysicalDevice));
+
+    if(!devices) {
+        printf("Error: Creating devices list!\n");
+        return 0; 
+    }
+    vkEnumeratePhysicalDevices(context->instance,&device_count,devices);
+
+    printf("Found %d Vulkan GPU(s):\n",device_count);
+    for (unsigned int i = 0; i < device_count; i++)
+    {   
+        VkPhysicalDeviceProperties properties = {};
+        vkGetPhysicalDeviceProperties(devices[i],&properties);
+        printf("GPU %d: %s\n",i,properties.deviceName);
+    }
+
+    // Need to create a way to change this by the user!!!
+    context->pyhsical_device = devices[0];
+
+    vkGetPhysicalDeviceProperties(context->pyhsical_device,&context->pyhsical_device_properties);
+    printf("Selected GPU: %s\n",context->pyhsical_device_properties.deviceName);
+
+    free(devices);
+    return 1;
+}
+
 
 // Create Vulkan Context
 VulkanContext* initVulkan(void) {
@@ -52,7 +102,12 @@ VulkanContext* initVulkan(void) {
     }
 
     if(!initVkInstance(context)) {
-        printf("Couldt not create VKInstance!\n");
+        printf("Error: Could not create VKInstance!\n");
+        return NULL;
+    }
+
+    if(!getPhysicalDevice(context)) {
+        printf("Error: Could not find any Device with Vulkan Support!");
         return NULL;
     }
 
@@ -80,7 +135,7 @@ void Render_Init() {
     vkContext = initVulkan();
     
     if(!vkContext) {
-        printf("Failed to create VulkanContext!\n");
+        printf("Error: Failed to create VulkanContext!\n");
         exit(-1);
     }
 
