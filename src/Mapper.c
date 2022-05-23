@@ -22,14 +22,6 @@ u8 MIRROR = HORIZONTAL;
 
 
 
-void MAPPER_INIT(FILE* file) {
-    
-    
-    
-}
-
-
-
 u8 MAPPER_000_CPU_READ(u16 address) {
     u8 data = 0;
     u16 mapped_addr = 0;
