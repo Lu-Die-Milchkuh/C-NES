@@ -25,7 +25,6 @@ u16 temp_address = 0;
 
 // opcode -> u8 that identifies the instruction
 u8 opcode = 0;
-
 /*
 
 **********************************************
@@ -79,7 +78,7 @@ void getAbsolute(void) {
     highByte = bus_read(PC);
 
     // Creating a 16 Bit Address out of 2 Bytes
-    address = (highByte << 8 | lowByte); 
+    address = (highByte << 8 | lowByte);
     temp_data = bus_read(address);
 
 }
@@ -170,19 +169,23 @@ void getIndirectX(void) {
 // Indirect Addressing Mode + Offset Y
 void getIndirectY(void) {
     u8 tmp_addr1 = 0;
-    u8 tmp_addr2 = 0;
-    u16 tmp_addr = 0;
+    //u8 tmp_addr2 = 0;
+    //u16 tmp_addr = 0;
     u16 real_addr = 0;
+
+    u8 lowByte = 0;
+    u8 highByte = 0;
 
     PC++;
     tmp_addr1 = bus_read(PC);
-    PC++;
-    tmp_addr2 = bus_read(PC) ;
+    //PC++;
+    lowByte = bus_read(tmp_addr1);
+    highByte = bus_read(tmp_addr1+1);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
-    real_addr = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
+    //tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    real_addr = highByte << 8 | lowByte;
     real_addr += Y;
     temp_data = bus_read(real_addr);
 
@@ -582,10 +585,6 @@ void TYA(void){
 // Transfer X to Stackpointer
 void TXS(void){
     SP = X;
-
-    SR.Z = (SP==0);
-    SR.N = (SP>>7);
-
     PC++;
 }
 
@@ -792,7 +791,6 @@ void BVC(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -805,7 +803,6 @@ void BVS(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -818,7 +815,6 @@ void BEQ(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo; 
-        return;
     }
     PC++; 
 }
@@ -830,7 +826,6 @@ void BNE(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -842,7 +837,6 @@ void BPL(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -854,7 +848,6 @@ void BMI(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -866,7 +859,6 @@ void BCC(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -878,7 +870,6 @@ void BCS(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
-        return;
     }
     PC++; 
 }
@@ -1021,6 +1012,7 @@ void CPU_RESET(void) {
     X = 0;
     Y = 0;
     SR.reg = 0;
+    SR.unused = 1;
     PC = bus_read(0xFFFD)  << 8 | bus_read(0xFFFC); // Set PC to Reset Vector
     SP = 0xFF;
     printf("PC on RESET -> HEX: %x DEC: %d \n",PC,PC);
@@ -1048,6 +1040,7 @@ void CPU_STATUS(void) {
     printf("Y:\t%X\n",Y);
     printf("SP:\t%X\n",SP);
     printf("PC:\t%X\n",PC);
+    printf("\t\tCZIDBUVN\n");
     printf("STATUS:\t%x\t",SR.reg);
     bin(SR.reg,8);
     printf("\n");
