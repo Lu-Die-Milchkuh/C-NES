@@ -791,6 +791,8 @@ void BVC(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
@@ -803,6 +805,8 @@ void BVS(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
@@ -815,6 +819,8 @@ void BEQ(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo; 
+    } else {
+        PC++;
     }
     PC++; 
 }
@@ -826,17 +832,21 @@ void BNE(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
 
 // Branch if Result was positive
-void BPL(void) {
+void BPL(void) { 
     if(!SR.N) 
     {   
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
@@ -848,6 +858,8 @@ void BMI(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
@@ -859,6 +871,8 @@ void BCC(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
@@ -870,6 +884,8 @@ void BCS(void) {
         PC++;
         u8 foo = bus_read(PC);
         PC = PC + foo;
+    } else {
+        PC++;
     }
     PC++; 
 }
