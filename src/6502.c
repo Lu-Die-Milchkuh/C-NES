@@ -274,17 +274,21 @@ void getZPGYAddr(void) {
 void getIndirectAddr(void) {
     u8 highByte = 0; // HighByte of Address
     u8 lowByte = 0; //LowByte of Address
-    u8 tmp_addr = 0;  //Placeholder Address
+    u16 ptr_addr = 0;  // Pointer Address
+
+    // Data is accessed using a pointer. 
+    // The 16-bit address of the pointer is given in the two bytes following the opcode.
+    PC++;
+    lowByte = bus_read(PC);
 
     PC++;
-    tmp_addr = bus_read(PC);
+    highByte = bus_read(PC);
 
-    lowByte = bus_read(tmp_addr);
-    highByte = bus_read(tmp_addr+1);
+    ptr_addr = highByte << 8 | lowByte; 
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    temp_address = highByte << 8 | lowByte; 
+    temp_address = bus_read(ptr_addr+1) << 8 | bus_read(ptr_addr); 
     
 }
 
