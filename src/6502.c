@@ -126,19 +126,19 @@ void getAbsoluteY(void) {
 
 // Indirect Addressing Mode, given Address is used to calculate the real address where data is stored
 void getIndirect(void) {
-    u8 tmp_addr1 = 0; // HighByte
-    u8 tmp_addr2 = 0; //LowByte
+    u8 highByte = 0; // HighByte of Address
+    u8 lowByte = 0; // LowByte of Address
     u16 tmp_addr = 0;  //Placeholder Address
     u16 real_addr = 0;
 
     PC++;
-    tmp_addr1 = bus_read(PC);
+    lowByte = bus_read(PC);
     PC++;
-    tmp_addr2 = bus_read(PC);
+    highByte = bus_read(PC);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    tmp_addr = highByte << 8 | lowByte; 
 
     real_addr = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
     temp_data = bus_read(real_addr);
@@ -147,20 +147,21 @@ void getIndirect(void) {
 
 // Indirect Addressing Mode + Offset X
 void getIndirectX(void) {
-    u8 tmp_addr1 = 0;
-    u8 tmp_addr2 = 0;
-    u16 tmp_addr = 0;
+    u8 tmp_addr = 0;
     u16 real_addr = 0;
 
+    u8 lowByte = 0;
+    u8 highByte = 0;
+
     PC++;
-    tmp_addr1 = bus_read(PC) + X;
-    PC++;
-    tmp_addr2 = bus_read(PC) + X;
+    tmp_addr = bus_read(PC) + X;
+
+    lowByte = bus_read(tmp_addr);
+    highByte = bus_read(tmp_addr+1);
 
     // Real Address has to be calculated, from 
     // the content of the given address and (address+1)!
-    tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
-    real_addr = bus_read(tmp_addr+1) << 8 | bus_read(tmp_addr);
+    real_addr = highByte << 8 | lowByte;
 
     temp_data = bus_read(real_addr);
 
@@ -168,23 +169,19 @@ void getIndirectX(void) {
 
 // Indirect Addressing Mode + Offset Y
 void getIndirectY(void) {
-    u8 tmp_addr1 = 0;
-    //u8 tmp_addr2 = 0;
-    //u16 tmp_addr = 0;
+    u8 tmp_addr = 0;
     u16 real_addr = 0;
 
     u8 lowByte = 0;
     u8 highByte = 0;
 
     PC++;
-    tmp_addr1 = bus_read(PC);
-    //PC++;
-    lowByte = bus_read(tmp_addr1);
-    highByte = bus_read(tmp_addr1+1);
+    tmp_addr = bus_read(PC);
+    lowByte = bus_read(tmp_addr);
+    highByte = bus_read(tmp_addr+1);
 
     // Real Address has to be calculated, from 
-    // the content of the given address and (address+1)!
-    //tmp_addr = tmp_addr2 << 8 | tmp_addr1; 
+    // the content of the given address and (address+1)! 
     real_addr = highByte << 8 | lowByte;
     real_addr += Y;
     temp_data = bus_read(real_addr);
@@ -839,7 +836,7 @@ void BNE(void) {
 }
 
 // Branch if Result was positive
-void BPL(void) { 
+void BPL(void) {
     if(!SR.N) 
     {   
         PC++;
@@ -1057,7 +1054,7 @@ void CPU_STATUS(void) {
     printf("SP:\t%X\n",SP);
     printf("PC:\t%X\n",PC);
     printf("\t\tCZIDBUVN\n");
-    printf("STATUS:\t%x\t",SR.reg);
+    printf("STATUS:\t0x%x\t",SR.reg);
     bin(SR.reg,8);
     printf("\n");
 
