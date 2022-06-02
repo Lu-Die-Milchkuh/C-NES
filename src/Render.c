@@ -48,6 +48,7 @@ int initVkInstance(VulkanContext* context) {
     return 1;
 }
 
+
 // Find GPU(s) that support Vulkan
 int getPhysicalDevice(VulkanContext* context) {
     // Numbers of GPUs that support Vulkan
@@ -71,9 +72,11 @@ int getPhysicalDevice(VulkanContext* context) {
         printf("Error: Creating devices list!\n");
         return 0; 
     }
+
     vkEnumeratePhysicalDevices(context->instance,&device_count,devices);
 
     printf("Found %d Vulkan GPU(s):\n",device_count);
+
     for (unsigned int i = 0; i < device_count; i++)
     {   
         VkPhysicalDeviceProperties properties = {};
@@ -88,6 +91,67 @@ int getPhysicalDevice(VulkanContext* context) {
     printf("Selected GPU: %s\n",context->pyhsical_device_properties.deviceName);
 
     free(devices);
+    return 1;
+}
+
+
+int createLogicalDevice(VulkanContext* context) {
+    unsigned int queueFamiliesCount = 0;
+    unsigned int graphicsQueueIndex = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(context->pyhsical_device,&queueFamiliesCount,0);
+
+    if(!queueFamiliesCount) {
+        printf("Error: No Queues found!");
+        return 0;
+    }
+
+    VkQueueFamilyProperties* queueFamilies = malloc(sizeof(VkQueueFamilyProperties) * queueFamiliesCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(context->pyhsical_device,&queueFamiliesCount,queueFamilies);
+
+    for(unsigned int i = 0; i < queueFamiliesCount;i++) {
+        VkQueueFamilyProperties queueFamily = queueFamilies[i];
+
+        if(queueFamily.queueCount > 0) {
+            if(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                graphicsQueueIndex = i;
+                break;
+            }
+        }
+    }
+
+    // Queue Priority set to Max
+    float priorities[] = {1.0f};
+
+    VkDeviceQueueCreateInfo queueCreateInfo = {
+        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        0,
+        0,
+        graphicsQueueIndex,
+        1,
+        priorities, 
+    };
+
+    //VkPhysicalDeviceFeatures enabledFeatures = {};
+
+    VkDeviceCreateInfo createInfo = { 
+        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        0,
+        0,
+        1,
+        &queueCreateInfo,
+        0,0,0,0,0 
+    };
+    
+
+    if(vkCreateDevice(context->pyhsical_device,&createInfo,0,&context->device) != VK_SUCCESS) {
+        printf("Error:  Failed to create Logical Device\n");
+        return 0;
+    }
+
+    context->graphicsQueue.familyIndex = graphicsQueueIndex; 
+    vkGetDeviceQueue(context->device,graphicsQueueIndex,0,&context->graphicsQueue.queue);
+
+    free(queueFamilies);
     return 1;
 }
 
@@ -107,7 +171,12 @@ VulkanContext* initVulkan(void) {
     }
 
     if(!getPhysicalDevice(context)) {
-        printf("Error: Could not find any Device with Vulkan Support!");
+        printf("Error: Could not find any Device with Vulkan Support!\n");
+        return NULL;
+    }
+
+    if(!createLogicalDevice(context)) {
+        printf("Error: Could not create Logical Device!\n");
         return NULL;
     }
 
@@ -138,14 +207,16 @@ void Render_Init() {
         printf("Error: Failed to create VulkanContext!\n");
         exit(-1);
     }
-
-
+    
 }
 
 
-// Clear up every SDL related stuff
+// Clear up every SDL and Vulkan related stuff
 void Render_Destroy() {
-    SDL_DestroyWindow(window);
+    vkDeviceWaitIdle(vkContext->device);    // Wait till Device is in idle state
+    vkDestroyDevice(vkContext->device,0);  
+    vkDestroyInstance(vkContext->instance,0);   
     free(vkContext);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }
