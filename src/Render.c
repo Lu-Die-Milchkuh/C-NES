@@ -95,6 +95,7 @@ int getPhysicalDevice(VulkanContext* context) {
 }
 
 
+// Create VKDevice
 int createLogicalDevice(VulkanContext* context) {
     unsigned int queueFamiliesCount = 0;
     unsigned int graphicsQueueIndex = 0;
@@ -184,12 +185,12 @@ VulkanContext* initVulkan(void) {
 }
 
 
-// Create SDL Window
-void Render_Init() {
+// Create SDL Window and initiate Vulkan
+void Render_Init(void) {
     
     if(SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
-        printf("Error initializing SDL!\n");
+        printf("Error: initializing SDL!\n");
         exit(-1);
     }
 
@@ -197,7 +198,7 @@ void Render_Init() {
 
     if(!window) 
     {
-        printf("Error creating SDL Window!\n");
+        printf("Error: creating SDL Window!\n");
         exit(-1);
     }
     
@@ -212,7 +213,7 @@ void Render_Init() {
 
 
 // Clear up every SDL and Vulkan related stuff
-void Render_Destroy() {
+void Render_Destroy(void) {
     vkDeviceWaitIdle(vkContext->device);    // Wait till Device is in idle state
     vkDestroyDevice(vkContext->device,0);  
     vkDestroyInstance(vkContext->instance,0);   

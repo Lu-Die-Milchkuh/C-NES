@@ -97,7 +97,7 @@ void loadROM(char* path) {
 
 
 // Freeing allocated memory
-void unloadROM() {
+void unloadROM(void) {
     
     if(prg_rom != NULL) 
     {

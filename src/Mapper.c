@@ -44,4 +44,3 @@ u8 MAPPER_000_PPU_READ(u16 address) {
     }
     return data; 
 }
-

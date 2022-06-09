@@ -159,7 +159,7 @@ u8 PPU_READ(u16 address) {
 	{
 		address &= 0x0FFF;
 
-		if (MIRROR==VERTICAL)
+		if (MIRROR == VERTICAL)
 		{
 			// Vertical
 			if (address >= 0x0000 && address <= 0x03FF)
