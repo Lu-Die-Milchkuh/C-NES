@@ -17,7 +17,6 @@ typedef struct {
     VulkanQueue graphicsQueue;
 } VulkanContext;
 
-VulkanContext* initVulkan(void);
 
 void Render_Init(void);
 void Render_Destroy(void);
