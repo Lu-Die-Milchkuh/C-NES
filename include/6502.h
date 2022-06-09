@@ -52,6 +52,21 @@ extern STATUS SR; // Status Register
 */      
 extern u8 memory[2048];
 
+
+/*
+This struct will be used in the future to get rid
+of all the global variables (by passing a pointer to the functions)
+
+typedef struct {
+    u8 A;
+    u8 X;
+    u8 Y;
+    u8 SP;
+    u16 PC;
+    STATUS SR;
+} CPU;
+*/
+
 // Reset all internal Register
 void CPU_RESET(void);
 
