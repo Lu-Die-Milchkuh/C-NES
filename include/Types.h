@@ -1,7 +1,5 @@
 #pragma once
+#include <stdint.h>
 
-typedef unsigned char u8; // 8-Bit
-typedef unsigned short u16; // 16 Bit
-
-//#define TRUE 1
-//#define FALSE 0
+typedef uint8_t u8; // 8-Bit
+typedef uint16_t u16; // 16 Bit
