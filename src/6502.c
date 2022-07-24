@@ -25,6 +25,7 @@ u16 temp_address = 0;
 
 // opcode -> u8 that identifies the instruction
 u8 opcode = 0;
+
 /*
 
 **********************************************
