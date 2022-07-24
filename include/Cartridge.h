@@ -29,7 +29,7 @@ typedef struct {
 		        u8 prg_ram_size;
 		        u8 tv_system1;
 		        u8 tv_system2;
-		        char unused[5];
+		        u8 unused[5];
 } ROM_HEADER;
 
 

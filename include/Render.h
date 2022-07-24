@@ -4,7 +4,7 @@
 
 typedef struct {
     VkQueue queue;
-    unsigned int familyIndex;
+    uint32_t familyIndex;
 } VulkanQueue;
 
 
