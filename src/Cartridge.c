@@ -8,7 +8,7 @@
 
 #include "Cartridge.h"
 #include "Mapper.h"
-
+#include "log.h"
 
 ROM_HEADER header;
 
@@ -20,8 +20,8 @@ void loadROM(char* path) {
     size_t prg_size = 0;
 
     if(file == NULL) 
-    {
-        printf("Failed to load File!");
+    {   
+        LOG_WRITE("ERROR: Failed to load file: %s",path);
         exit(-1);
     }
     
@@ -92,6 +92,7 @@ void loadROM(char* path) {
     }
     
     fclose(file);
+    LOG_WRITE("INFO: Loading %s successfully!\n",path);
 }
 
 
