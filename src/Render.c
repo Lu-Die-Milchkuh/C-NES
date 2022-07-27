@@ -1,11 +1,5 @@
-#ifndef _STDIO_H
 #include <stdio.h>
-#endif
-
-#ifndef	_STDLIB_H
 #include <stdlib.h>
-#endif
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 #include "Render.h"
@@ -26,6 +20,24 @@ u8 initVkInstance(VulkanContext* context) {
         "VK_LAYER_KHRONOS_validation",
     };*/
 
+
+    // Getting Instance Extension, needed to find VK_Surface
+    uint32_t instanceExtensionCount = 0;
+    SDL_Vulkan_GetInstanceExtensions(window,&instanceExtensionCount,0);
+    const char** enabledInstanceExtensions = malloc(instanceExtensionCount * sizeof(char*));
+
+    if(!enabledInstanceExtensions) {
+        LOG_WRITE("ERROR: Could not allocate memory for extension names!\n");
+        return 0; 
+    }
+
+    SDL_Vulkan_GetInstanceExtensions(window,&instanceExtensionCount,enabledInstanceExtensions);
+
+    for(uint32_t i = 0; i < instanceExtensionCount;i++) {
+        LOG_WRITE("INFO: VK_Instance_Extension %d: %s\n",i,enabledInstanceExtensions[i]);
+    }
+
+    // Application Info: Name,App Version, min. Vulkan Version required
     VkApplicationInfo applicationInfo = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
     applicationInfo.pApplicationName = "Nessi";
     applicationInfo.applicationVersion = VK_MAKE_VERSION(0,0,1);
@@ -35,6 +47,8 @@ u8 initVkInstance(VulkanContext* context) {
     VkInstanceCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &applicationInfo;
+    createInfo.enabledExtensionCount = instanceExtensionCount;
+    createInfo.ppEnabledExtensionNames = enabledInstanceExtensions;
   
  
     if(vkCreateInstance(&createInfo,0,&context->instance) != VK_SUCCESS) 
@@ -43,6 +57,7 @@ u8 initVkInstance(VulkanContext* context) {
         return 0;
     }
 
+    free(enabledInstanceExtensions);
     return 1;
 }
 
