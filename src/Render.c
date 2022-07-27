@@ -24,12 +24,9 @@ u8 initVkInstance(VulkanContext* context) {
     // Getting Instance Extension, needed to find VK_Surface
     uint32_t instanceExtensionCount = 0;
     SDL_Vulkan_GetInstanceExtensions(window,&instanceExtensionCount,0);
-    const char** enabledInstanceExtensions = malloc(instanceExtensionCount * sizeof(char*));
 
-    if(!enabledInstanceExtensions) {
-        LOG_WRITE("ERROR: Could not allocate memory for extension names!\n");
-        return 0; 
-    }
+    // Array of Instance Extension Names
+    const char*  enabledInstanceExtensions[instanceExtensionCount];
 
     SDL_Vulkan_GetInstanceExtensions(window,&instanceExtensionCount,enabledInstanceExtensions);
 
@@ -57,7 +54,6 @@ u8 initVkInstance(VulkanContext* context) {
         return 0;
     }
 
-    free(enabledInstanceExtensions);
     return 1;
 }
 
