@@ -1,6 +1,4 @@
-#ifndef _STDIO_H
 #include <stdio.h>
-#endif
 #include "PPU.h"
 #include "Mapper.h"
 
@@ -26,7 +24,6 @@ loopy_register tram_address;
 PPUSTATUS status;
 PPUMASK mask;
 PPUCTRL control;
-
 
 
 u8 PPU_CPU_READ(u16 address) {
@@ -76,7 +73,6 @@ u8 PPU_CPU_READ(u16 address) {
 
     return data;
 }
-
 
 
 void PPU_CPU_WRITE(u8 data,u16 address) {
@@ -143,8 +139,6 @@ void PPU_CPU_WRITE(u8 data,u16 address) {
 }
 
 
-
-
 u8 PPU_READ(u16 address) {
     u8 data = 0;
     address = address & 0x3FFF;
@@ -196,8 +190,6 @@ u8 PPU_READ(u16 address) {
 
 	return data;
 }
-
-
 
 
 void PPU_WRITE(u8 data,u16 address) {

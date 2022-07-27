@@ -1,11 +1,5 @@
-#ifndef _STDIO_H
 #include <stdio.h>
-#endif
-
-#ifndef	_STDLIB_H
 #include <stdlib.h>
-#endif
-
 #include "Cartridge.h"
 #include "Mapper.h"
 #include "log.h"
@@ -94,8 +88,6 @@ void loadROM(char* path) {
     fclose(file);
     LOG_WRITE("INFO: Loading %s successfully!\n",path);
 }
-
-
 
 // Freeing allocated memory
 void unloadROM(void) {
