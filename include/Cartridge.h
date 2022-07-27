@@ -34,4 +34,4 @@ typedef struct {
 
 
 void loadROM(char* path);
-void unloadROM();
+void unloadROM(void);
